@@ -4,7 +4,9 @@
 #define FILENAME "D:\\PROJECTS\\lj\\input.txt"
 
 int main() {
-    THROW(splitWord(FILENAME));
+    Graph* g = new Graph(ALPHA_SIZE);
+
+    THROW(splitWord(FILENAME, g));
 
     return 0;
 }

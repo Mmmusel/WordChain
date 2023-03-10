@@ -2,7 +2,7 @@
 
 vector<string> word[ALPHA_SIZE][ALPHA_SIZE];
 
-void splitWord(const char *fileName) {
+void splitWord(const char *fileName, Graph * g) {
     FILE *file = nullptr;
     fopen_s(&file, fileName, "r");
 
@@ -20,19 +20,22 @@ void splitWord(const char *fileName) {
         if (islower(c)) {
             wordBuf += (char)c;
         } else {
-            checkBuf(wordBuf);
+            checkBuf(wordBuf, g);
         }
     }
-    checkBuf(wordBuf);
+    checkBuf(wordBuf, g);
     fclose(file);
+
+    getAllChain(g);
 }
 
 //TODO 单字符单词如何处理
-void checkBuf(string& wordBuf) {
+void checkBuf(string& wordBuf, Graph * g) {
     if (wordBuf.length() > 0) {
         int start = wordBuf.front() - 'a';
         int end = wordBuf.back() - 'a';
         word[start][end].push_back(wordBuf);
+        g->addEdge(new Edge(wordBuf));
 
         DEBUG(wordBuf);
         wordBuf.clear();
