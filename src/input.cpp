@@ -26,7 +26,9 @@ void splitWord(const char *fileName, Graph * g) {
     checkBuf(wordBuf, g);
     fclose(file);
 
+    //参数命令
     getAllChain(g);
+    wordCountMaxLoopless(g);
 }
 
 //TODO 单字符单词如何处理

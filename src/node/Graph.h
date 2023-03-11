@@ -27,7 +27,6 @@ public:
         int s = _edge -> getStart();
         int e = _edge -> getEnd();
         edges[s][e].push_back(_edge);
-        inDegree[e]++;
 
         if (s == e){
             selfEdge[s].push_back(_edge);
@@ -35,6 +34,7 @@ public:
         else {
             edgesOut[s].push_back(_edge);
             edgesIn[e].push_back(_edge);
+            inDegree[e]++;
         }
     }
 
@@ -46,13 +46,23 @@ public:
         return &(edgesOut[s]);
     }
 
+    vector <Edge*>* getInEdges(int s) {
+        return &(edgesIn[s]);
+    }
+
     int getPointNum() const {
         return pointNum;
+    }
+
+    vector <Edge*>* getSelfEdge(int s) {
+        return &(selfEdge[s]);
     }
 };
 
 int getAllChain(Graph *g);
 void dfsAllChain(Graph *g,int start);
 void printChain(vector <Edge*> *chain);
+int wordCountMaxLoopless(Graph * graph);
+int topoSort(Graph* graph, vector<int>* result);
 
 #endif //WORDCHAIN_GRAPH_H

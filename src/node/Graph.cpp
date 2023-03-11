@@ -28,6 +28,14 @@ int topoSort(Graph* graph, vector<int>* result) {
         }
     }
 
+    /*
+    auto e = result -> begin();
+    while(e != result -> end()) {
+        cout << (*e) << ' ' ;
+        e++;
+    }
+     */
+
     if (result->size() != cnt) {
         return -LOOP;
     }
@@ -48,6 +56,7 @@ int getAllChain(Graph *g){
     for(int i = 0; i < ALPHA_SIZE; i++){
         dfsAllChain(g,i);
     }
+    cout << "-n" << endl;
     cout << allChainCount << endl;
     cout << allChainBuf.str() << endl;
     return 0;
