@@ -4,22 +4,26 @@
 #include "../main.h"
 #include "Edge.h"
 
+#include <sstream>
+#include <queue>
+
+
 class Graph {
 private:
     int pointNum;
-    int inDegree[26];
+    int inDegree[26]{};
     vector <Edge*> edges[26][26];
     vector <Edge*> selfEdge[26];
     vector <Edge*> edgesIn[26];
     vector <Edge*> edgesOut[26];
 
 public:
-    Graph(int _point_num){
+    explicit Graph(int _point_num) {
         pointNum = _point_num;
         memset(inDegree, 0, (26 << 2));
     }
 
-    void addEdge(Edge* _edge){
+    void addEdge(Edge* _edge) {
         int s = _edge -> getStart();
         int e = _edge -> getEnd();
         edges[s][e].push_back(_edge);
@@ -34,16 +38,20 @@ public:
         }
     }
 
-    int * getInDegree(){
+    int * getInDegree() {
         return inDegree;
     }
 
-    vector <Edge*>* getOutEdges(int s){
+    vector <Edge*>* getOutEdges(int s) {
         return &(edgesOut[s]);
+    }
+
+    int getPointNum() const {
+        return pointNum;
     }
 };
 
-void getAllChain(Graph *g);
+int getAllChain(Graph *g);
 void dfsAllChain(Graph *g,int start);
 void printChain(vector <Edge*> *chain);
 

@@ -34,6 +34,15 @@ public:
     {
     }
 
+    explicit MyException(int errorCode)
+    {
+        if (errorCode==-1) {
+            Info = "ERROR: LOOP!";
+        } else {
+            Info = "ERROR";
+        }
+    }
+
     /** 获得异常信息
      * @return 异常信息
      */
@@ -49,6 +58,13 @@ try{ \
 }catch(MyException& e){ \
     cerr << e.GetInfo() << std::endl; \
     return 0; \
+} \
+}while(0)
+
+#define CATCH(x) do { \
+if ((x)<0){ \
+    cerr << MyException(x).GetInfo() << std::endl; \
+    return x; \
 } \
 }while(0)
 

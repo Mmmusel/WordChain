@@ -1,18 +1,56 @@
-#include <sstream>
 #include "Graph.h"
+#include "../error.h"
+
+int topoSort(Graph* graph, vector<int>* result) {
+    int inDegree[ALPHA_SIZE];
+    memcpy(inDegree, graph->getInDegree(), (ALPHA_SIZE << 2));
+
+    queue<int> q;
+
+    int cnt = graph -> getPointNum();
+    for (int i = 0; i < cnt; ++i) {
+        if (!inDegree[i]) {
+            q.push(i);
+            result->push_back(i);
+        }
+    }
+
+    while(!q.empty()) {
+        int from = q.front();
+        q.pop();
+        for(Edge* e : *(graph -> getOutEdges(from)))
+        {
+            int to = e->getEnd();
+            if (!--inDegree[to]) {
+                q.push(to);
+                result -> push_back(to);
+            }
+        }
+    }
+
+    if (result->size() != cnt) {
+        return -LOOP;
+    }
+
+    return 0;
+}
 
 vector<Edge*>* chainBuf;
+vector<int>* topo;
 int allChainCount=0;
 ostringstream allChainBuf;
 
-void getAllChain(Graph *g){
+int getAllChain(Graph *g){
     chainBuf = new vector<Edge*>();
-
+    topo = new vector<int>;
+    int r = topoSort(g, topo);
+    CATCH(r);
     for(int i = 0; i < ALPHA_SIZE; i++){
         dfsAllChain(g,i);
     }
     cout << allChainCount << endl;
     cout << allChainBuf.str() << endl;
+    return 0;
 }
 
 void dfsAllChain(Graph *g,int start){
