@@ -29,10 +29,11 @@ void splitWord(const char *fileName, Graph * g) {
     g->calOutPoints();
 
     //参数命令
-    getAllChain(g);
-    wordCountMaxLoopless(g);
-    wordCountMaxLoop(g);
-    charCountMaxLoopless(g);
+    //getAllChain(g);
+    //wordCountMaxLoopless(g);
+    //wordCountMaxLoop(g);
+    //charCountMaxLoopless(g);
+    charCountMaxLoop(g);
 }
 
 //TODO 单字符单词如何处理

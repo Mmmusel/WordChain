@@ -105,6 +105,8 @@ void removeLoop(Graph *graph){
     }
     looplessGraph = new Graph(blockNum);
 
+
+
     for(Edge* e : *(graph -> getEdges())) {
         int from = e->getStart();
         int to = e->getEnd();
@@ -116,6 +118,7 @@ void removeLoop(Graph *graph){
         else {
             sccGraph.at(point2sccID[from])->addEdge(e);
             point2pointEdges[from][to].push_back(e);
+
             point2points[from].insert(to);
         }
     }
@@ -160,4 +163,19 @@ void printChain(vector <Edge*> *chain){
     }
     allChainBuf << endl;
     allChainCount += 1;
+}
+
+extern Graph * rawGraph;
+
+//程序连续执行多条指令前需要重置
+void resizePoint2PointEdges(){
+    for(Edge* e : *(rawGraph -> getEdges())) {
+        int from = e->getStart();
+        int to = e->getEnd();
+        //边[端点属于一个连通分量]加进局部sccGraph
+        //边[端点不在一个连通分量]加进大图looplessGraph,此时端点的id不是字母，代表sccId
+        if (point2sccID[from] == point2sccID[to]) {
+            point2pointEdges[from][to].push_back(e);
+        }
+    }
 }

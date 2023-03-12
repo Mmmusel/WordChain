@@ -18,6 +18,7 @@ private:
     vector <Edge*> edges;
 
     vector <int> edgesOutPoints[ALPHA_SIZE];
+    int selfLoopSum[ALPHA_SIZE]{};
 
 public:
     explicit Graph(int _point_num) {
@@ -29,10 +30,17 @@ public:
         for(int i=0;i<ALPHA_SIZE;i++){
             for(int j=0;j<ALPHA_SIZE;j++){
                 if (edgesMartrix[i][j].empty()) continue;
-                if (i==j) continue;
+                if (i==j) {
+                    for (Edge * e: edgesMartrix[i][i]){
+                        selfLoopSum[i]+=e->getWeight();
+                    }
+                    continue;
+                }
                 edgesOutPoints[i].push_back(j);
             }
         }
+
+
     }
 
     void addEdge(Edge* _edge) {
@@ -67,6 +75,10 @@ public:
         return pointNum;
     }
 
+    int getselfLoopSum(int k) const {
+        return selfLoopSum[k];
+    }
+
     vector <Edge*>* getSelfEdge(int s) {
         return &(selfEdge[s]);
     }
@@ -85,4 +97,8 @@ void sccInnerDfs(int start, int now, int length);
 void removeLoop(Graph *graph);
 int wordCountMaxLoop(Graph* graph);
 int charCountMaxLoopless(Graph* graph);
+int charCountMaxLoop(Graph* graph);
+
+void sccInnerDfsChar(int start, int now, int length);
+void resizePoint2PointEdges();
 #endif //WORDCHAIN_GRAPH_H

@@ -13,7 +13,7 @@ using namespace std;
 
 //DEBUG(x)：自定义用于debug的输出调试宏
 //由此处DEBUG_MODE控制输出开关
-#define DEBUG_MODE true
+#define DEBUG_MODE false
 
 #define DEBUG(x) do { \
     if(DEBUG_MODE){       \
