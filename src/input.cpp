@@ -32,6 +32,7 @@ void splitWord(const char *fileName, Graph * g) {
     getAllChain(g);
     wordCountMaxLoopless(g);
     wordCountMaxLoop(g);
+    charCountMaxLoopless(g);
 }
 
 //TODO 单字符单词如何处理

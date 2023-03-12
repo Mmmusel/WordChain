@@ -84,4 +84,5 @@ int topoSort(Graph* graph, vector<int>* result);
 void sccInnerDfs(int start, int now, int length);
 void removeLoop(Graph *graph);
 int wordCountMaxLoop(Graph* graph);
+int charCountMaxLoopless(Graph* graph);
 #endif //WORDCHAIN_GRAPH_H
