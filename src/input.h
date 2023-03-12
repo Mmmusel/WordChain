@@ -4,7 +4,7 @@
 # include "main.h"
 #include "node/Graph.h"
 
-void splitWord(const char *fileName, Graph * g);
-void checkBuf(string& wordBuf, Graph * g);
+void splitWord(const char *fileName, Graph * g, int reject);
+void checkBuf(string& wordBuf, Graph * g, int reject);
 
 #endif //WORDCHAIN_INPUT_H

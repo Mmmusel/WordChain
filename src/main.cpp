@@ -9,7 +9,7 @@ int main() {
 
     rawGraph= new Graph(ALPHA_SIZE);
 
-    THROW(splitWord(FILENAME, rawGraph));
+    THROW(splitWord(FILENAME, rawGraph ,-1));
 
     return 0;
 }
