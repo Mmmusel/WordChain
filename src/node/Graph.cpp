@@ -1,3 +1,5 @@
+#include <stack>
+#include <set>
 #include "Graph.h"
 #include "../error.h"
 
@@ -41,6 +43,82 @@ int topoSort(Graph* graph, vector<int>* result) {
     }
 
     return 0;
+}
+
+stack<int>* sccStack;
+bool sccVisit[ALPHA_SIZE], sccInStack[ALPHA_SIZE];
+int sccLow[ALPHA_SIZE], sccDfn[ALPHA_SIZE];
+int dfsNum = 0, blockNum = 0;
+
+//sccGraph 数据结构
+vector<Graph*> sccGraph;
+vector<int> sccId2Points[ALPHA_SIZE];
+int point2sccID[ALPHA_SIZE];
+
+Graph* looplessGraph;
+
+void tarjan(Graph* graph, int x) {
+    sccLow[x] = sccDfn[x] = ++dfsNum;
+    sccStack -> push(x);
+    sccVisit[x] = sccInStack[x] = true;
+    for(Edge* e : *(graph -> getOutEdges(x))) {
+        int to = e->getEnd();
+        if (!sccVisit[to]) {
+            tarjan(graph, to);
+            sccLow[x] = min(sccLow[x], sccLow[to]);
+        }
+        else if (sccInStack[to]) {
+            sccLow[x] = min(sccLow[x], sccDfn[to]);
+        }
+    }
+    int topPoint;
+    if (sccLow[x] == sccDfn[x]) {
+        do {
+            topPoint = sccStack -> top();
+            sccStack -> pop();
+            sccInStack[topPoint] = false;
+
+            sccId2Points[blockNum].push_back(topPoint);
+            point2sccID[topPoint] = blockNum;
+
+        } while (sccLow[topPoint] != sccDfn[topPoint]);
+        blockNum++;
+    }
+}
+
+//scc inner dfs used
+set<int> point2points[ALPHA_SIZE];
+vector<Edge*> point2pointEdges[ALPHA_SIZE][ALPHA_SIZE];
+
+void removeLoop(Graph *graph){
+    memset(sccVisit, 0, (26));
+    dfsNum = blockNum = 0;
+    for (int i = 0; i < ALPHA_SIZE; i++) {
+        if (!sccVisit[i]) {
+            sccStack = new stack<int>;
+            tarjan(graph, i);
+        }
+    }
+
+    for (int i = 0; i < blockNum; i++) {
+        sccGraph.push_back(new Graph(sccId2Points[i].size()));
+    }
+    looplessGraph = new Graph(blockNum);
+
+    for(Edge* e : *(graph -> getEdges())) {
+        int from = e->getStart();
+        int to = e->getEnd();
+        //边[端点属于一个连通分量]加进局部sccGraph
+        //边[端点不在一个连通分量]加进大图looplessGraph,此时端点的id不是字母，代表sccId
+        if (point2sccID[from] != point2sccID[to]) {
+            looplessGraph->addEdge(new Edge(e->getWord(),point2sccID[from],point2sccID[to]));
+        }
+        else {
+            sccGraph.at(point2sccID[from])->addEdge(e);
+            point2pointEdges[from][to].push_back(e);
+            point2points[from].insert(to);
+        }
+    }
 }
 
 vector<Edge*>* chainBuf;

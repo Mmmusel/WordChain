@@ -7,15 +7,17 @@
 #include <sstream>
 #include <queue>
 
-
 class Graph {
 private:
     int pointNum;
-    int inDegree[26]{};
-    vector <Edge*> edges[26][26];
-    vector <Edge*> selfEdge[26];
-    vector <Edge*> edgesIn[26];
-    vector <Edge*> edgesOut[26];
+    int inDegree[ALPHA_SIZE]{};
+    vector <Edge*> edgesMartrix[ALPHA_SIZE][ALPHA_SIZE];
+    vector <Edge*> selfEdge[ALPHA_SIZE];
+    vector <Edge*> edgesIn[ALPHA_SIZE];
+    vector <Edge*> edgesOut[ALPHA_SIZE];
+    vector <Edge*> edges;
+
+    vector <int> edgesOutPoints[ALPHA_SIZE];
 
 public:
     explicit Graph(int _point_num) {
@@ -23,10 +25,20 @@ public:
         memset(inDegree, 0, (26 << 2));
     }
 
+    void calOutPoints(){
+        for(int i=0;i<ALPHA_SIZE;i++){
+            for(int j=0;j<ALPHA_SIZE;j++){
+                if (edgesMartrix[i][j].empty()) continue;
+                if (i==j) continue;
+                edgesOutPoints[i].push_back(j);
+            }
+        }
+    }
+
     void addEdge(Edge* _edge) {
         int s = _edge -> getStart();
         int e = _edge -> getEnd();
-        edges[s][e].push_back(_edge);
+        edgesMartrix[s][e].push_back(_edge);
 
         if (s == e){
             selfEdge[s].push_back(_edge);
@@ -35,6 +47,7 @@ public:
             edgesOut[s].push_back(_edge);
             edgesIn[e].push_back(_edge);
             inDegree[e]++;
+            edges.push_back(_edge);
         }
     }
 
@@ -57,6 +70,10 @@ public:
     vector <Edge*>* getSelfEdge(int s) {
         return &(selfEdge[s]);
     }
+
+    vector <Edge*>* getEdges() {
+        return &edges;
+    }
 };
 
 int getAllChain(Graph *g);
@@ -64,5 +81,7 @@ void dfsAllChain(Graph *g,int start);
 void printChain(vector <Edge*> *chain);
 int wordCountMaxLoopless(Graph * graph);
 int topoSort(Graph* graph, vector<int>* result);
-
+void sccInnerDfs(int start, int now, int length);
+void removeLoop(Graph *graph);
+int wordCountMaxLoop(Graph* graph);
 #endif //WORDCHAIN_GRAPH_H

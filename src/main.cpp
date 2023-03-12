@@ -3,10 +3,13 @@
 
 #define FILENAME "D:\\PROJECTS\\lj\\input.txt"
 
+Graph * rawGraph;
 int main() {
-    Graph* g = new Graph(ALPHA_SIZE);
 
-    THROW(splitWord(FILENAME, g));
+
+    rawGraph= new Graph(ALPHA_SIZE);
+
+    THROW(splitWord(FILENAME, rawGraph));
 
     return 0;
 }

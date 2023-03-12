@@ -17,6 +17,13 @@ public:
         word = _word;
     }
 
+    Edge(const string& _word, int _s, int _e) {
+        word = _word;
+        weight = _word.length();
+        start = _s;
+        end = _e;
+    }
+
     int getStart() {
         return start;
     }
@@ -30,6 +37,5 @@ public:
         return word;
     }
 };
-
 
 #endif //WORDCHAIN_EDGE_H
