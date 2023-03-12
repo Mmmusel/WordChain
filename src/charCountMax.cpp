@@ -86,9 +86,14 @@ extern int point2sccID[ALPHA_SIZE];
 extern int sccOuterDp[ALPHA_SIZE];
 extern Edge * preEdge[ALPHA_SIZE];
 extern int preSCCPoint[ALPHA_SIZE];
-int LoopGraphMaxWordDPChar() {
-    for (int i = 0; i < ALPHA_SIZE; i++) {
-        sccOuterDp[i] = (rawGraph->getselfLoopSum(i));
+int LoopGraphMaxWordDPChar(int head, int tail) {
+    if (head < 0) {
+        for (int i = 0; i < ALPHA_SIZE; i++) {
+            sccOuterDp[i] = (rawGraph->getselfLoopSum(i));
+        }
+    }else {
+        memset(sccOuterDp,255,sizeof(sccOuterDp));
+        sccOuterDp[head] = (rawGraph->getselfLoopSum(head));
     }
 
     memset(preEdge, 0, ALPHA_SIZE << 2);
@@ -105,6 +110,7 @@ int LoopGraphMaxWordDPChar() {
         int fromSccId = sccTopo->at(i);
         //找同属于这个scc的其他点
         for (int otherSccId: sccId2Points[fromSccId]) {
+            if (sccOuterDp[otherSccId]<0) continue;
             for (int anotherSccId: sccId2Points[fromSccId]) {
                 int newDp = sccOuterDp[otherSccId] + sccInnerDp[otherSccId][anotherSccId];
                 if (newDp > gp[anotherSccId]) {
@@ -134,9 +140,13 @@ int LoopGraphMaxWordDPChar() {
     }
 
     int returnEndPoint = 0;
-    for (int i = 1; i < ALPHA_SIZE; i++) {
-        if (sccOuterDp[i] > sccOuterDp[returnEndPoint] ) {
-            returnEndPoint = i;
+    if(tail >= 0) {
+        returnEndPoint = tail;
+    } else {
+        for (int i = 1; i < ALPHA_SIZE; i++) {
+            if (sccOuterDp[i] > sccOuterDp[returnEndPoint]) {
+                returnEndPoint = i;
+            }
         }
     }
     return returnEndPoint;
@@ -244,12 +254,12 @@ int printWordMaxChainChar(int now) {
     return loopChain->size();
 }
 
-int charCountMaxLoop(Graph* graph) {
+int charCountMaxLoop(Graph* graph, int head, int tail) {
 
     topo = new vector<int>;
     int r = topoSort(graph, topo);
     if(r==0){
-        return charCountMaxLoopless(graph);
+        return charCountMaxLoopless(graph, head, tail);
     }
 
     removeLoop(graph);
@@ -257,12 +267,12 @@ int charCountMaxLoop(Graph* graph) {
     sortByCharLoop();
 
     sccInnerGraphDpChar();
-    int now = LoopGraphMaxWordDPChar();
+    int now = LoopGraphMaxWordDPChar(head, tail);
 
     return printWordMaxChainChar(now);
 }
 
-int charCountMaxLoopless(Graph* graph) {
+int charCountMaxLoopless(Graph* graph, int head, int tail) {
     sortByChar();
     int dpChar[ALPHA_SIZE];
 
@@ -278,15 +288,24 @@ int charCountMaxLoopless(Graph* graph) {
     int r = topoSort(graph, topo);
     CATCH(r);
 
-    //单词链中对于每个字母可以存在一个首尾字符相同的单词,取排序后最大的
-    for (int i = 0; i < ALPHA_SIZE; i++) {
-        vector <Edge*>* k = rawGraph->getSelfEdge(i);
-        dpChar[i] = (k->empty() ? 0 : k->back()->getWord().length());
-        dpLineLen[i] = (k->empty() ? 0 : 1);
+    if (head < 0) {
+        //单词链中对于每个字母可以存在一个首尾字符相同的单词,取排序后最大的
+        for (int i = 0; i < ALPHA_SIZE; i++) {
+            vector <Edge*>* k = rawGraph->getSelfEdge(i);
+            dpChar[i] = (k->empty() ? 0 : k->back()->getWord().length());
+            dpLineLen[i] = (k->empty() ? 0 : 1);
+        }
+    } else {
+        memset(dpChar,255,sizeof(dpChar));
+        memset(dpLineLen,0,sizeof(dpLineLen));
+        vector <Edge*>* k = rawGraph->getSelfEdge(head);
+        dpChar[head] = (k->empty() ? 0 : k->back()->getWord().length());
+        dpLineLen[head] = (k->empty() ? 0 : 1);
     }
 
     for (int i = 0; i < ALPHA_SIZE; i++) {
         int from = (*topo)[i];
+        if (dpChar[from] < 0) continue;
 
         for(Edge* e : *(graph -> getOutEdges(from))) {
             int to = e -> getEnd();
@@ -303,9 +322,13 @@ int charCountMaxLoopless(Graph* graph) {
     }
 
     int maxEnd = 0;
-    for (int i = 1; i < ALPHA_SIZE; i++) {
-        if (dpChar[i] > dpChar[maxEnd] && dpLineLen[i]>1) {
-            maxEnd = i;
+    if(tail >= 0) {
+        maxEnd = tail;
+    } else {
+        for (int i = 1; i < ALPHA_SIZE; i++) {
+            if (dpChar[i] > dpChar[maxEnd] && dpLineLen[i] > 1) {
+                maxEnd = i;
+            }
         }
     }
 

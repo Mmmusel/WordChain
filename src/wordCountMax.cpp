@@ -62,10 +62,17 @@ int preSCCPoint[ALPHA_SIZE];
 extern Graph* looplessGraph;
 extern int point2sccID[ALPHA_SIZE];
 
-int LoopGraphMaxWordDP() {
-    for (int i = 0; i < ALPHA_SIZE; i++) {
-        sccOuterDp[i] = (rawGraph->getSelfEdge(i)->empty() ? 0 : rawGraph->getSelfEdge(i)->size());
+int LoopGraphMaxWordDP(int head, int tail) {
+    if (head < 0) {
+        for (int i = 0; i < ALPHA_SIZE; i++) {
+            sccOuterDp[i] = (rawGraph->getSelfEdge(i)->empty() ? 0 : rawGraph->getSelfEdge(i)->size());
+        }
+    } else {
+        memset(sccOuterDp,255,(ALPHA_SIZE << 2));
+        sccOuterDp[head] = (rawGraph->getSelfEdge(head)->empty() ? 0 : rawGraph->getSelfEdge(head)->size());
     }
+
+
 
     memset(preEdge, 0, ALPHA_SIZE << 2);
     memset(preSCCPoint, 255, ALPHA_SIZE << 2);
@@ -81,6 +88,7 @@ int LoopGraphMaxWordDP() {
         int fromSccId = sccTopo->at(i);
         //找同属于这个scc的其他点
         for (int otherSccId: sccId2Points[fromSccId]) {
+            if (sccOuterDp[otherSccId]<0) continue;
             for (int anotherSccId: sccId2Points[fromSccId]) {
                 int newDp = sccOuterDp[otherSccId] + sccInnerDp[otherSccId][anotherSccId];
                 if (newDp > gp[anotherSccId]) {
@@ -110,9 +118,13 @@ int LoopGraphMaxWordDP() {
     }
 
     int returnEndPoint = 0;
-    for (int i = 1; i < ALPHA_SIZE; i++) {
-        if (sccOuterDp[i] > sccOuterDp[returnEndPoint]) {
-            returnEndPoint = i;
+    if(tail >= 0) {
+        returnEndPoint = tail;
+    } else {
+        for (int i = 1; i < ALPHA_SIZE; i++) {
+            if (sccOuterDp[i] > sccOuterDp[returnEndPoint]) {
+                returnEndPoint = i;
+            }
         }
     }
     return returnEndPoint;
@@ -216,19 +228,19 @@ int printWordMaxChain(int now) {
     return loopChain->size();
 }
 
-int wordCountMaxLoop(Graph* graph) {
+int wordCountMaxLoop(Graph* graph, int head, int tail) {
     topo = new vector<int>;
     int r = topoSort(graph, topo);
     if(r==0){
-        return wordCountMaxLoopless(graph);
+        return wordCountMaxLoopless(graph,head,tail);
     }
     removeLoop(graph);
     sccInnerGraphDp();
-    int now = LoopGraphMaxWordDP();
+    int now = LoopGraphMaxWordDP(head,tail);
     return printWordMaxChain(now);
 }
 
-int wordCountMaxLoopless(Graph* graph) {
+int wordCountMaxLoopless(Graph* graph, int head, int tail) {
     int dp[ALPHA_SIZE];
     Edge* preEdge[ALPHA_SIZE];
     //dp[i]：以字母i为结尾时，能形成的单词链最大长度
@@ -240,13 +252,21 @@ int wordCountMaxLoopless(Graph* graph) {
     int r = topoSort(graph, topo);
     CATCH(r);
 
-    //单词链中对于每个字母可以存在一个首尾字符相同的单词
-    for (int i = 0; i < ALPHA_SIZE; i++) {
-        dp[i] = (graph->getSelfEdge(i)->empty() ? 0 : 1);
+    if (head < 0) {
+        //单词链中对于每个字母可以存在一个首尾字符相同的单词
+        for (int i = 0; i < ALPHA_SIZE; i++) {
+            dp[i] = (graph->getSelfEdge(i)->empty() ? 0 : 1);
+        }
+    } else {
+        memset(dp,255,(ALPHA_SIZE << 2));
+        dp[head] = (graph->getSelfEdge(head)->empty() ? 0 : 1);
     }
+
 
     for (int i = 0; i < ALPHA_SIZE; i++) {
         int from = (*topo)[i];
+
+        if (dp[from] < 0) continue;
 
         for(Edge* e : *(graph -> getOutEdges(from))) {
             int to = e -> getEnd();
@@ -259,13 +279,19 @@ int wordCountMaxLoopless(Graph* graph) {
     }
 
     int maxEnd = 0;
-    for (int i = 1; i < ALPHA_SIZE; i++) {
-        if (dp[i] > dp[maxEnd]) {
-            maxEnd = i;
+    if(tail >= 0) {
+        maxEnd = tail;
+    } else {
+        for (int i = 1; i < ALPHA_SIZE; i++) {
+            if (dp[i] > dp[maxEnd]) {
+                maxEnd = i;
+            }
         }
     }
 
+
     if (dp[maxEnd] <= 1) {
+        cout << "no chain" << endl;
         return 0;
     }
 

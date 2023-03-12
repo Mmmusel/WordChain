@@ -91,13 +91,13 @@ public:
 int getAllChain(Graph *g);
 void dfsAllChain(Graph *g,int start);
 void printChain(vector <Edge*> *chain);
-int wordCountMaxLoopless(Graph * graph);
+int wordCountMaxLoopless(Graph* graph, int head, int tail);
 int topoSort(Graph* graph, vector<int>* result);
 void sccInnerDfs(int start, int now, int length);
 void removeLoop(Graph *graph);
-int wordCountMaxLoop(Graph* graph);
-int charCountMaxLoopless(Graph* graph);
-int charCountMaxLoop(Graph* graph);
+int wordCountMaxLoop(Graph* graph, int head, int tail);
+int charCountMaxLoopless(Graph* graph, int head, int tail);
+int charCountMaxLoop(Graph* graph, int head, int tail);
 
 void sccInnerDfsChar(int start, int now, int length);
 void resizePoint2PointEdges();

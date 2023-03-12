@@ -30,10 +30,10 @@ void splitWord(const char *fileName, Graph * g) {
 
     //参数命令
     //getAllChain(g);
-    //wordCountMaxLoopless(g);
-    //wordCountMaxLoop(g);
-    //charCountMaxLoopless(g);
-    charCountMaxLoop(g);
+    //wordCountMaxLoopless(g,-1,-1);
+    //wordCountMaxLoop(g,'a'-'a','a'-'a');
+    //charCountMaxLoopless(g,-1,-1);
+    charCountMaxLoop(g,-1,-1);
 }
 
 //TODO 单字符单词如何处理
