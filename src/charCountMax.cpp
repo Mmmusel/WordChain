@@ -253,6 +253,14 @@ int printWordMaxChainChar(int now) {
         cout << (*s) << ' ' ;
         s++;
     }
+
+    ofstream outfile;
+    outfile.open("result.txt");
+    auto t = loopChain -> begin();
+    while(t != loopChain -> end()) {
+        outfile << (*t) << endl ;
+        t++;
+    }
     return loopChain->size();
 }
 
@@ -361,6 +369,14 @@ int charCountMaxLoopless(Graph* graph, int head, int tail) {
     while(s != wordCountMaxChain -> end()) {
         cout << (*s) << ' ' ;
         s++;
+    }
+
+    ofstream outfile;
+    outfile.open("result.txt");
+    auto t = wordCountMaxChain -> begin();
+    while(t != wordCountMaxChain -> end()) {
+        outfile << (*t) << endl ;
+        t++;
     }
 
     return wordCountMaxChain->size();

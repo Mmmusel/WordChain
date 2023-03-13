@@ -137,7 +137,7 @@ int getAllChain(Graph *g){
     for(int i = 0; i < ALPHA_SIZE; i++){
         dfsAllChain(g,i);
     }
-    cout << "-n" << endl;
+    //cout << "-n" << endl;
     cout << allChainCount << endl;
     cout << allChainBuf.str() << endl;
     return 0;

@@ -30,14 +30,14 @@ void splitWord(const char *fileName, Graph * g, int reject) {
     //g->calOutPoints();
 
     rawGraph=new Graph(word);
-    g=rawGraph;
+    //g=rawGraph;
 
     //参数命令
     //getAllChain(g);
     //wordCountMaxLoopless(g,-1,-1);
     //wordCountMaxLoop(g,-1,-1);
     //charCountMaxLoopless(g,-1,-1);
-    charCountMaxLoop(g,-1,-1);
+    //charCountMaxLoop(g,-1,-1);
 
 
 }
