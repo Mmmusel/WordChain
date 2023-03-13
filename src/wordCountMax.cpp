@@ -4,7 +4,6 @@
 
 extern vector<int>* topo;
 extern vector<Edge*>* chainBuf;
-extern vector<string> word[ALPHA_SIZE][ALPHA_SIZE];
 
 extern vector<Graph*> sccGraph;
 extern vector<int> sccId2Points[ALPHA_SIZE];
@@ -301,14 +300,14 @@ int wordCountMaxLoopless(Graph* graph, int head, int tail) {
     while (preEdge[nowEnd]) {
         int nowStart = preEdge[nowEnd]->getStart();
         if (!graph->getSelfEdge(nowEnd)->empty()) {
-            wordCountMaxChain->push_back(word[nowEnd][nowEnd].front());
+            wordCountMaxChain->push_back(rawGraph->getSelfEdge(nowEnd)->front()->getWord());
         }
         wordCountMaxChain->push_back(preEdge[nowEnd]->getWord());
         nowEnd = nowStart;
     }
     //起点自环
     if (!graph->getSelfEdge(nowEnd)->empty()) {
-        wordCountMaxChain->push_back(word[nowEnd][nowEnd].front());
+        wordCountMaxChain->push_back(rawGraph->getSelfEdge(nowEnd)->front()->getWord());
     }
 
     cout << "-w loopless" << endl;

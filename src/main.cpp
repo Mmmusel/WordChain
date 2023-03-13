@@ -5,9 +5,8 @@
 
 Graph * rawGraph;
 int main() {
-
-
-    rawGraph= new Graph(ALPHA_SIZE);
+    
+    //rawGraph= new Graph(ALPHA_SIZE);
 
     THROW(splitWord(FILENAME, rawGraph ,-1));
 

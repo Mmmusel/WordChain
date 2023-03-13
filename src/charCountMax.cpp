@@ -56,6 +56,7 @@ void sccInnerGraphDpChar() {
             sccInnerDfsChar(x, x, 0);
         }
     }
+    //cout << sccInnerDp['t'-'']
 }
 
 void sccInnerDfsChar(int start, int now, int length) {
@@ -131,7 +132,7 @@ int LoopGraphMaxWordDPChar(int head, int tail) {
             string tmp = e->getWord();
             int start = tmp.front() - 'a';
             int end = tmp.back() - 'a';
-            int to_weight = rawGraph->getselfLoopSum(i);
+            int to_weight = rawGraph->getselfLoopSum(end);
             if (sccOuterDp[end] < sccOuterDp[start] + tmp.length() + to_weight) {
                 sccOuterDp[end] = sccOuterDp[start] + tmp.length() + to_weight;
                 preEdge[end] = e;
@@ -149,6 +150,7 @@ int LoopGraphMaxWordDPChar(int head, int tail) {
             }
         }
     }
+    cout << sccOuterDp[returnEndPoint]<< endl;
     return returnEndPoint;
 }
 
