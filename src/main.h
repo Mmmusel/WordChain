@@ -11,15 +11,7 @@ using namespace std;
 
 #define ALPHA_SIZE 26
 
-//DEBUG(x)：自定义用于debug的输出调试宏
-//由此处DEBUG_MODE控制输出开关
-#define DEBUG_MODE false
-
-#define DEBUG(x) do { \
-    if(DEBUG_MODE){       \
-        std::cerr<<(x)<<std::endl; \
-    }\
-}while(0)
+#define LOOP 1
 
 //THROW(x)：自定义输出异常信息的宏
 struct MyException : public exception

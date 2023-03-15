@@ -1,12 +1,9 @@
 #include <algorithm>
 #include <set>
-#include "node/Graph.h"
+#include "Graph.h"
 
-extern vector<int>* topo;
 extern vector<Edge*>* chainBuf;
 extern vector<string> word[ALPHA_SIZE][ALPHA_SIZE];
-
-extern Graph * rawGraph;
 
 bool cmp1(Edge* n1,Edge* n2)
 {
@@ -20,15 +17,15 @@ extern vector<int> sccId2Points[ALPHA_SIZE];
 extern set<int> point2points[ALPHA_SIZE];
 
 extern vector<Edge*> point2pointEdges[ALPHA_SIZE][ALPHA_SIZE];
-void sortByChar(){
+void sortByChar(Graph * rawGraph){
     for (int i=0;i<ALPHA_SIZE;i++) {
         vector <Edge*>* k = rawGraph->getSelfEdge(i);
         sort(k->begin(),k->end(),cmp1);
     }
 }
 
-void sortByCharLoop() {
-    sortByChar();
+void sortByCharLoop(Graph * rawGraph) {
+    sortByChar(rawGraph);
 
     //resizePoint2PointEdges();
     for (int i=0;i<ALPHA_SIZE;i++) {
@@ -42,7 +39,7 @@ void sortByCharLoop() {
 extern int sccInnerDp[ALPHA_SIZE][ALPHA_SIZE];
 extern int toPointLoopWeightAdded [ALPHA_SIZE];
 
-void sccInnerGraphDpChar() {
+void sccInnerGraphDpChar(Graph * rawGraph) {
     memset(sccInnerDp, 255, sizeof(sccInnerDp));
 
     for (int i = 0; i < sccGraph.size(); i++)
@@ -53,13 +50,13 @@ void sccInnerGraphDpChar() {
     for (int sccId=0;sccId < sccGraph.size();sccId++) {
         for(int x : sccId2Points[sccId]){
             memset(toPointLoopWeightAdded,0,ALPHA_SIZE);
-            sccInnerDfsChar(x, x, 0);
+            sccInnerDfsChar(rawGraph,x, x, 0);
         }
     }
     //cout << sccInnerDp['t'-'']
 }
 
-void sccInnerDfsChar(int start, int now, int length) {
+void sccInnerDfsChar(Graph * rawGraph,int start, int now, int length) {
     toPointLoopWeightAdded[now]++;
 
     //modify: -c 贪心：for邻接点选最大的
@@ -73,7 +70,7 @@ void sccInnerDfsChar(int start, int now, int length) {
 
         sccInnerDp[start][to]=max(sccInnerDp[start][to], newDp);
 
-        sccInnerDfsChar(start,to,newDp);
+        sccInnerDfsChar(rawGraph,start,to,newDp);
         point2pointEdges[now][to].push_back(e);
     }
     toPointLoopWeightAdded[now]--;
@@ -87,7 +84,7 @@ extern int point2sccID[ALPHA_SIZE];
 extern int sccOuterDp[ALPHA_SIZE];
 extern Edge * preEdge[ALPHA_SIZE];
 extern int preSCCPoint[ALPHA_SIZE];
-int LoopGraphMaxWordDPChar(int head, int tail) {
+int LoopGraphMaxWordDPChar(Graph * rawGraph,int head, int tail) {
     if (head < 0) {
         for (int i = 0; i < ALPHA_SIZE; i++) {
             sccOuterDp[i] = (rawGraph->getselfLoopSum(i));
@@ -157,7 +154,7 @@ int LoopGraphMaxWordDPChar(int head, int tail) {
 string wordListChar[20202];
 extern int wordCnt;
 
-bool dfsSccWordMaxChainChar(int now, int end, int length, vector<string>* sccInnerChain) {
+bool dfsSccWordMaxChainChar(Graph * rawGraph,int now, int end, int length, vector<string>* sccInnerChain) {
     if (length == 0) {
         if (end == now) {
             for (int i = 1; i <= wordCnt; i++) {
@@ -189,7 +186,7 @@ bool dfsSccWordMaxChainChar(int now, int end, int length, vector<string>* sccInn
             }
         }
 
-        if (dfsSccWordMaxChainChar(to, end, length - e->getWeight() - toPointSelfLoopWeight, sccInnerChain)) {
+        if (dfsSccWordMaxChainChar(rawGraph,to, end, length - e->getWeight() - toPointSelfLoopWeight, sccInnerChain)) {
             return 1;
         }
         wordCnt = lastCnt;
@@ -199,7 +196,7 @@ bool dfsSccWordMaxChainChar(int now, int end, int length, vector<string>* sccInn
     return 0;
 }
 
-int printWordMaxChainChar(int now) {
+int printWordMaxChainChar(Graph * rawGraph,int now,char *result[]) {
     vector<string>* loopChain = new vector<string>();
     wordCnt=0;
 
@@ -211,7 +208,7 @@ int printWordMaxChainChar(int now) {
             vector<string>* subChain = new vector<string>();
 
             memset(toPointLoopWeightAdded,0,ALPHA_SIZE);
-            dfsSccWordMaxChainChar(from, now, sccInnerDp[from][now], subChain);
+            dfsSccWordMaxChainChar(rawGraph,from, now, sccInnerDp[from][now], subChain);
 
             //memset一个就行了，上次dfs之后边的数组应该被回溯完整了
             reverse(subChain -> begin(), subChain -> end());
@@ -244,46 +241,58 @@ int printWordMaxChainChar(int now) {
             loopChain->push_back(loopE->getWord());
         }
     }
-
+    int len=0;
+    ofstream outfile;
+    outfile.open("result.txt");
     cout << "-c loop" << endl;
     cout << loopChain->size() << endl;
     reverse(loopChain -> begin(), loopChain -> end());
     auto s = loopChain -> begin();
     while(s != loopChain -> end()) {
         cout << (*s) << ' ' ;
+        outfile << (*s) << endl ;
+        result[len++]=(char *)(*s).data();
         s++;
     }
 
-    ofstream outfile;
-    outfile.open("result.txt");
-    auto t = loopChain -> begin();
-    while(t != loopChain -> end()) {
-        outfile << (*t) << endl ;
-        t++;
-    }
     return loopChain->size();
 }
 
-int charCountMaxLoop(Graph* graph, int head, int tail) {
+int gen_chain_char(char* words[], int len, char* result[], char head, char tail, char reject, bool enable_loop){
+    int headInt=head-'a';
+    int tailInt=tail-'a';
+    int rejectInt=reject-'a';
 
-    topo = new vector<int>;
-    int r = topoSort(graph, topo);
-    if(r==0){
-        return charCountMaxLoopless(graph, head, tail);
+    Graph * rawGraph =new Graph(words,len,rejectInt);
+
+    vector<int> *topo = new vector<int>;
+    int r = topoSort(rawGraph, topo);
+    if(enable_loop) {
+
+        if(r==0){
+            return charCountMaxLoopless(rawGraph,topo, headInt, tailInt, result);
+        }
+        return charCountMaxLoop(rawGraph, headInt, tailInt, result);
     }
-
-    removeLoop(graph);
-
-    sortByCharLoop();
-
-    sccInnerGraphDpChar();
-    int now = LoopGraphMaxWordDPChar(head, tail);
-
-    return printWordMaxChainChar(now);
+    CATCH(r);
+    return charCountMaxLoopless(rawGraph,topo, headInt, tailInt, result);
 }
 
-int charCountMaxLoopless(Graph* graph, int head, int tail) {
-    sortByChar();
+int charCountMaxLoop(Graph * rawGraph,  int head, int tail, char * result[]) {
+
+    removeLoop(rawGraph);
+
+    sortByCharLoop(rawGraph);
+
+    sccInnerGraphDpChar(rawGraph);
+    int now = LoopGraphMaxWordDPChar(rawGraph,head, tail);
+
+    return printWordMaxChainChar(rawGraph,now,result);
+}
+
+int charCountMaxLoopless(Graph * rawGraph, vector<int>* topo,int head, int tail, char * result[]) {
+
+    sortByChar(rawGraph);
     int dpChar[ALPHA_SIZE];
 
     //char不能像word一样由dp结果判断是否为单词链，再加一个链长dp
@@ -294,9 +303,6 @@ int charCountMaxLoopless(Graph* graph, int head, int tail) {
     memset(preEdge, 0, sizeof(preEdge));
     chainBuf = new vector<Edge*>;
 
-    topo = new vector<int>;
-    int r = topoSort(graph, topo);
-    CATCH(r);
 
     if (head < 0) {
         //单词链中对于每个字母可以存在一个首尾字符相同的单词,取排序后最大的
@@ -317,10 +323,10 @@ int charCountMaxLoopless(Graph* graph, int head, int tail) {
         int from = (*topo)[i];
         if (dpChar[from] < 0) continue;
 
-        for(Edge* e : *(graph -> getOutEdges(from))) {
+        for(Edge* e : *(rawGraph -> getOutEdges(from))) {
             int to = e -> getEnd();
 
-            int endSelfWeight = (graph->getSelfEdge(i)->empty() ? 0 : graph->getSelfEdge(i)->back()->getWord().length());
+            int endSelfWeight = (rawGraph->getSelfEdge(i)->empty() ? 0 : rawGraph->getSelfEdge(i)->back()->getWord().length());
             int newDp = dpChar[from] + e->getWeight() + endSelfWeight;
 
             if (newDp > dpChar[to]) {
@@ -351,32 +357,30 @@ int charCountMaxLoopless(Graph* graph, int head, int tail) {
     int nowEnd = maxEnd;
     while (preEdge[nowEnd]) {
         int nowStart = preEdge[nowEnd]->getStart();
-        if (!graph->getSelfEdge(nowEnd)->empty()) {
+        if (!rawGraph->getSelfEdge(nowEnd)->empty()) {
             wordCountMaxChain->push_back(rawGraph->getSelfEdge(nowEnd)->back()->getWord());
         }
         wordCountMaxChain->push_back(preEdge[nowEnd]->getWord());
         nowEnd = nowStart;
     }
     //起点自环
-    if (!graph->getSelfEdge(nowEnd)->empty()) {
+    if (!rawGraph->getSelfEdge(nowEnd)->empty()) {
         wordCountMaxChain->push_back(rawGraph->getSelfEdge(nowEnd)->back()->getWord());
     }
 
+
+    int len=0;
+    ofstream outfile;
+    outfile.open("result.txt");
     cout << "-c loopless" << endl;
     cout << wordCountMaxChain->size() << endl ;
     reverse(wordCountMaxChain -> begin(), wordCountMaxChain -> end());
     auto s = wordCountMaxChain -> begin();
     while(s != wordCountMaxChain -> end()) {
         cout << (*s) << ' ' ;
+        outfile << (*s) << endl ;
+        result[len++]=(char *)(*s).data();
         s++;
-    }
-
-    ofstream outfile;
-    outfile.open("result.txt");
-    auto t = wordCountMaxChain -> begin();
-    while(t != wordCountMaxChain -> end()) {
-        outfile << (*t) << endl ;
-        t++;
     }
 
     return wordCountMaxChain->size();

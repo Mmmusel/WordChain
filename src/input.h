@@ -2,9 +2,8 @@
 #define WORDCHAIN_INPUT_H
 
 # include "main.h"
-#include "node/Graph.h"
 
-void splitWord(const char *fileName, Graph * g, int reject);
-void checkBuf(string& wordBuf, Graph * g, int reject);
+int splitWord(char *words[],const char *fileName, int reject);
+void checkBuf(string& wordBuf);
 
 #endif //WORDCHAIN_INPUT_H

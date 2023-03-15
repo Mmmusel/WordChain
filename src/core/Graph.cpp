@@ -1,7 +1,6 @@
 #include <stack>
 #include <set>
 #include "Graph.h"
-#include "../error.h"
 
 int topoSort(Graph* graph, vector<int>* result) {
     int inDegree[ALPHA_SIZE];
@@ -105,8 +104,6 @@ void removeLoop(Graph *graph){
     }
     looplessGraph = new Graph(blockNum);
 
-
-
     for(Edge* e : *(graph -> getEdges())) {
         int from = e->getStart();
         int to = e->getEnd();
@@ -129,8 +126,12 @@ vector<int>* topo;
 int allChainCount=0;
 ostringstream allChainBuf;
 
-int getAllChain(Graph *g){
+int gen_chains_all(char* words[], int len,char * result[]){
+    Graph * g=new Graph(words,len);
     chainBuf = new vector<Edge*>();
+
+    allChainBuf.clear();
+    allChainCount=0;
     topo = new vector<int>;
     int r = topoSort(g, topo);
     CATCH(r);
@@ -138,9 +139,21 @@ int getAllChain(Graph *g){
         dfsAllChain(g,i);
     }
     //cout << "-n" << endl;
+    string kkk=allChainBuf.str();
+    //
     cout << allChainCount << endl;
     cout << allChainBuf.str() << endl;
-    return 0;
+
+    ofstream outfile;
+    outfile.open("result.txt");
+
+    outfile << allChainCount << endl ;
+    outfile << allChainBuf.str() << endl;
+    outfile.close();
+
+    result[0]=(char*)kkk.data();
+
+    return allChainCount;
 }
 
 void dfsAllChain(Graph *g,int start){
@@ -165,10 +178,9 @@ void printChain(vector <Edge*> *chain){
     allChainCount += 1;
 }
 
-extern Graph * rawGraph;
 
 //程序连续执行多条指令前需要重置
-void resizePoint2PointEdges(){
+void resizePoint2PointEdges(Graph * rawGraph){
     for(Edge* e : *(rawGraph -> getEdges())) {
         int from = e->getStart();
         int to = e->getEnd();
@@ -178,4 +190,57 @@ void resizePoint2PointEdges(){
             point2pointEdges[from][to].push_back(e);
         }
     }
+}
+
+const char* vuetifyAPI(const char* input, int type, char head, char tail, char reject,  bool weighted) {
+    string input_copy(input);
+    vector<const char*> words;
+    for (int i = 0, las = -1, size = (int) strlen(input); i < size; ++i) {
+        char& c = const_cast<char &>(input_copy.data()[i]);
+        auto isalpha = [](char c) {
+            return 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z';
+        };
+        auto tolower = [](char c) {
+            return c | 0x20;
+        };
+        if (isalpha(c)) {
+            if (i != las) words.push_back(&c);
+            las = i + 1;
+            c = tolower(c);
+        }
+        else {
+            c = 0;
+        }
+    }
+    vector<char*> temp(32768, nullptr);
+
+    int ret_val = 0;
+
+
+    if(type==0){
+        ret_val=gen_chains_all(const_cast<char **>(words.data()), words.size(), temp.data());
+    } else if (weighted) {
+        ret_val=gen_chain_word(const_cast<char **>(words.data()), words.size(), temp.data(),
+                               head,tail,reject,type==3);
+    }else {
+        ret_val=gen_chain_char(const_cast<char **>(words.data()), words.size(), temp.data(),
+                               head,tail,reject,type==3);
+    }
+
+    stringstream ss;
+
+    if (type == 0) {
+        ss << ret_val << endl;
+        ss << temp[0] << endl;
+    } else {
+        for (int i = 0; i < ret_val; ++i) {
+            ss << temp[i] << endl;
+        }
+    }
+
+    if (ss.str().size() == 0) {
+        return (new string("WordList-GUI: no solution exists"))->data();
+    }
+
+    return (new string(ss.str()))->data();
 }

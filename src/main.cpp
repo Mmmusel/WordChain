@@ -1,11 +1,8 @@
 #include "main.h"
 #include "input.h"
+#include "core/Graph.h"
 
-#define FILENAME "D:\\PROJECTS\\lj\\input.txt"
-
-Graph * rawGraph;
 int main(int argc, char *argv[]) {
-
     vector<int> filename;
     bool loop_enabled=false;
 
@@ -74,23 +71,27 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    //rawGraph= new Graph(ALPHA_SIZE);
+    vector<char*> words(32768, nullptr);
+    int len=0;
+    THROW(len = splitWord(words.data(),argv[filename.front()],htj[2]-'a'));
 
-    THROW(splitWord(argv[filename.front()], rawGraph ,htj[2]-'a'));
+    FILE *file = nullptr;
+    fopen_s(&file, argv[filename.front()], "r");
 
+    if (file == nullptr) {
+        throw MyException("file not exist");
+    }
+
+    vector<char*> result(32768, nullptr);
     char x = chainCmd.back();
     if(x=='n') {
-        getAllChain(rawGraph);
+        gen_chains_all(words.data(),len,result.data());
     } else if (x=='w') {
-        if (loop_enabled) {
-            wordCountMaxLoop(rawGraph,htj[0]-'a',htj[1]-'a');
-        } else
-            wordCountMaxLoopless(rawGraph,htj[0]-'a',htj[1]-'a');
+        gen_chain_word(words.data(),len,result.data(),
+                       htj[0],htj[1],htj[2],loop_enabled);
     } else {
-        if (loop_enabled) {
-            charCountMaxLoop(rawGraph,htj[0]-'a',htj[1]-'a');
-        } else
-            charCountMaxLoopless(rawGraph,htj[0]-'a',htj[1]-'a');
+        gen_chain_char(words.data(),len,result.data(),
+                       htj[0],htj[1],htj[2],loop_enabled);
     }
     return 0;
 }
