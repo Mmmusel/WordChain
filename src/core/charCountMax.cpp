@@ -3,7 +3,6 @@
 #include "Graph.h"
 
 extern vector<Edge*>* chainBuf;
-extern vector<string> word[ALPHA_SIZE][ALPHA_SIZE];
 
 bool cmp1(Edge* n1,Edge* n2)
 {
@@ -53,7 +52,6 @@ void sccInnerGraphDpChar(Graph * rawGraph) {
             sccInnerDfsChar(rawGraph,x, x, 0);
         }
     }
-    //cout << sccInnerDp['t'-'']
 }
 
 void sccInnerDfsChar(Graph * rawGraph,int start, int now, int length) {
@@ -326,7 +324,7 @@ int charCountMaxLoopless(Graph * rawGraph, vector<int>* topo,int head, int tail,
         for(Edge* e : *(rawGraph -> getOutEdges(from))) {
             int to = e -> getEnd();
 
-            int endSelfWeight = (rawGraph->getSelfEdge(i)->empty() ? 0 : rawGraph->getSelfEdge(i)->back()->getWord().length());
+            int endSelfWeight = (rawGraph->getSelfEdge(i)->empty() ? 0 : rawGraph->getSelfEdge(to)->back()->getWord().length());
             int newDp = dpChar[from] + e->getWeight() + endSelfWeight;
 
             if (newDp > dpChar[to]) {

@@ -205,8 +205,8 @@ public:
 };
 
 //int getAllChain(char* words[], int len);
-void dfsAllChain(Graph *g,int start);
-void printChain(vector <Edge*> *chain);
+void dfsAllChain(Graph *g,int start,vector<string>* dfsChain);
+void printChain(vector <Edge*> *chain ,vector<string>* dfsChain);
 int wordCountMaxLoopless(Graph * rawGraph, vector<int> *topo,  int head, int tail, char * result[]);
 int topoSort(Graph* graph, vector<int>* result);
 void sccInnerDfs(Graph* graph,int start, int now, int length);

@@ -1,5 +1,6 @@
 #include <stack>
 #include <set>
+#include <algorithm>
 #include "Graph.h"
 
 int topoSort(Graph* graph, vector<int>* result) {
@@ -90,7 +91,21 @@ set<int> point2points[ALPHA_SIZE];
 vector<Edge*> point2pointEdges[ALPHA_SIZE][ALPHA_SIZE];
 
 void removeLoop(Graph *graph){
-    memset(sccVisit, 0, (26));
+    for (int i=0;i<ALPHA_SIZE;i++) {
+        point2points->clear();
+        sccId2Points->clear();
+        for (int j=0;j<ALPHA_SIZE;j++) {
+            point2pointEdges[i][j].clear();
+        }
+    }
+    sccGraph.clear();
+    sccStack=new stack<int>;
+    dfsNum = 0;blockNum = 0;
+
+    memset(sccInStack, 0, sizeof(sccInStack));
+    memset(sccDfn, 255, sizeof(sccDfn));
+    memset(point2sccID,255,sizeof(point2sccID));
+    memset(sccVisit, 0, sizeof(sccVisit));
     dfsNum = blockNum = 0;
     for (int i = 0; i < ALPHA_SIZE; i++) {
         if (!sccVisit[i]) {
@@ -122,60 +137,62 @@ void removeLoop(Graph *graph){
 }
 
 vector<Edge*>* chainBuf;
-vector<int>* topo;
-int allChainCount=0;
-ostringstream allChainBuf;
+
+
+//string allChainBuf;
 
 int gen_chains_all(char* words[], int len,char * result[]){
     Graph * g=new Graph(words,len);
     chainBuf = new vector<Edge*>();
-
-    allChainBuf.clear();
+    int allChainCount=0;
+    //allChainBuf="";
     allChainCount=0;
-    topo = new vector<int>;
+    vector<string>* loopChain = new vector<string>();
+    vector<int>* topo = new vector<int>;
     int r = topoSort(g, topo);
     CATCH(r);
     for(int i = 0; i < ALPHA_SIZE; i++){
-        dfsAllChain(g,i);
+        dfsAllChain(g,i,loopChain);
     }
-    //cout << "-n" << endl;
-    string kkk=allChainBuf.str();
-    //
-    cout << allChainCount << endl;
-    cout << allChainBuf.str() << endl;
 
     ofstream outfile;
     outfile.open("result.txt");
-
-    outfile << allChainCount << endl ;
-    outfile << allChainBuf.str() << endl;
-    outfile.close();
-
-    result[0]=(char*)kkk.data();
+    cout << "-c loop" << endl;
+    cout << loopChain->size() << endl;
+    reverse(loopChain -> begin(), loopChain -> end());
+    auto s = loopChain -> begin();
+    while(s != loopChain -> end()) {
+        cout << (*s) << ' ' ;
+        outfile << (*s) << endl ;
+        result[allChainCount++]=(char *)(*s).data();
+        s++;
+    }
 
     return allChainCount;
 }
 
-void dfsAllChain(Graph *g,int start){
+void dfsAllChain(Graph *g,int start, vector<string>* dfsChains){
     vector <Edge*>* edges = g -> getOutEdges(start);
     for (auto e : *edges) {
         chainBuf -> push_back(e);
-        if(chainBuf -> size() > 1) printChain(chainBuf);
+        if(chainBuf -> size() > 1) printChain(chainBuf,dfsChains);
 
-        dfsAllChain(g,e -> getEnd());
+        dfsAllChain(g,e -> getEnd(),dfsChains);
         chainBuf -> pop_back();
     }
 }
 
 //TODO：单词链末尾是否允许空格
-void printChain(vector <Edge*> *chain){
+void printChain(vector <Edge*> *chain,vector<string> *dfsChains){
+    stringstream k;
     auto e = chain -> begin();
     while(e != chain -> end()) {
-        allChainBuf << (*e) -> getWord() << ' ' ;
+        k << (*e) -> getWord() << ' ' ;
         e++;
     }
-    allChainBuf << endl;
-    allChainCount += 1;
+    k << endl;
+    dfsChains->push_back(k.str());
+
 }
 
 

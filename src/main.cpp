@@ -84,14 +84,21 @@ int main(int argc, char *argv[]) {
 
     vector<char*> result(32768, nullptr);
     char x = chainCmd.back();
+    try{
     if(x=='n') {
         gen_chains_all(words.data(),len,result.data());
+
     } else if (x=='w') {
         gen_chain_word(words.data(),len,result.data(),
                        htj[0],htj[1],htj[2],loop_enabled);
+
     } else {
         gen_chain_char(words.data(),len,result.data(),
                        htj[0],htj[1],htj[2],loop_enabled);
+    }}
+    catch (MyException &e){
+        cout << e.GetInfo() <<endl;
+        return 0;
     }
     return 0;
 }

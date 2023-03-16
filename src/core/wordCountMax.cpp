@@ -172,6 +172,8 @@ bool dfsSccWordMaxChain(Graph * rawGraph, int now, int end, int length, vector<s
 int printWordMaxChain(Graph * rawGraph, int now ,char * result[]) {
     vector<string>* loopChain = new vector<string>();
 
+    wordCnt=0;
+
     bool inSCC = false;
     while (preEdge[now] || !inSCC && preSCCPoint[now] >= 0) {
         if (!inSCC && preSCCPoint[now] >= 0) {
@@ -245,7 +247,7 @@ int gen_chain_word(char* words[], int len, char* result[], char head, char tail,
         }
         return wordCountMaxLoop(rawGraph, headInt, tailInt, result);
     }
-    CATCH(r);
+    if (r) throw MyException(r);
     return wordCountMaxLoopless(rawGraph, topo, headInt, tailInt, result);
 }
 
@@ -282,7 +284,7 @@ int wordCountMaxLoopless(Graph* rawGraph, vector<int> * topo,int head, int tail,
 
         for(Edge* e : *(rawGraph -> getOutEdges(from))) {
             int to = e -> getEnd();
-            int newDp = dp[from] + 1 + (rawGraph->getSelfEdge(i)->empty() ? 0 : 1);
+            int newDp = dp[from] + 1 + (rawGraph->getSelfEdge(to)->empty() ? 0 : 1);
             if (newDp > dp[to]) {
                 dp[to] = newDp;
                 preEdge[to] = e;
