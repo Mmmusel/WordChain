@@ -206,6 +206,7 @@ int printWordMaxChainChar(Graph * rawGraph,int now,char *result[]) {
             vector<string>* subChain = new vector<string>();
 
             memset(toPointLoopWeightAdded,0,ALPHA_SIZE);
+            wordCnt=0;
             dfsSccWordMaxChainChar(rawGraph,from, now, sccInnerDp[from][now], subChain);
 
             //memset一个就行了，上次dfs之后边的数组应该被回溯完整了
@@ -241,29 +242,50 @@ int printWordMaxChainChar(Graph * rawGraph,int now,char *result[]) {
     }
     int len=0;
     ofstream outfile;
-    outfile.open("result.txt");
-    cout << "-c loop" << endl;
-    cout << loopChain->size() << endl;
+    outfile.open("solution.txt");
+
     reverse(loopChain -> begin(), loopChain -> end());
     auto s = loopChain -> begin();
     while(s != loopChain -> end()) {
-        cout << (*s) << ' ' ;
+        cout << (*s) << endl ;
         outfile << (*s) << endl ;
         result[len++]=(char *)(*s).data();
         s++;
     }
 
-    return loopChain->size();
+    outfile.close();
+
+    return len;
 }
 
 int gen_chain_char(char* words[], int len, char* result[], char head, char tail, char reject, bool enable_loop){
+    if(head != 0 && !isalpha(head)) throw CoreException(-3);
+    if(tail != 0 && !isalpha(tail)) throw CoreException(-3);
+    if(reject != 0 && !isalpha(reject)) throw CoreException(-3);
+    if(head == 0 || !isalpha(head)) head='`';
+    if(tail == 0 || !isalpha(tail)) tail='`';
+    if(reject == 0 || !isalpha(reject)) reject='`';
+
+    head = tolower(head);
+    tail = tolower(tail);
+    reject = tolower(reject);
+
     int headInt=head-'a';
     int tailInt=tail-'a';
     int rejectInt=reject-'a';
 
     Graph * rawGraph =new Graph(words,len,rejectInt);
-
     vector<int> *topo = new vector<int>;
+    if(rawGraph->hasSelfLoop()) {
+        if (!enable_loop) {
+            throw CoreException(-1);
+        } else {
+            topoSort(rawGraph, topo);
+            return charCountMaxLoop(rawGraph, headInt, tailInt, result);
+        }
+    }
+
+
     int r = topoSort(rawGraph, topo);
     if(enable_loop) {
 
@@ -272,7 +294,7 @@ int gen_chain_char(char* words[], int len, char* result[], char head, char tail,
         }
         return charCountMaxLoop(rawGraph, headInt, tailInt, result);
     }
-    CATCH(r);
+    if (r) throw CoreException(-LOOP);
     return charCountMaxLoopless(rawGraph,topo, headInt, tailInt, result);
 }
 
@@ -324,7 +346,7 @@ int charCountMaxLoopless(Graph * rawGraph, vector<int>* topo,int head, int tail,
         for(Edge* e : *(rawGraph -> getOutEdges(from))) {
             int to = e -> getEnd();
 
-            int endSelfWeight = (rawGraph->getSelfEdge(i)->empty() ? 0 : rawGraph->getSelfEdge(to)->back()->getWord().length());
+            int endSelfWeight = (rawGraph->getSelfEdge(to)->empty() ? 0 : rawGraph->getSelfEdge(to)->back()->getWord().length());
             int newDp = dpChar[from] + e->getWeight() + endSelfWeight;
 
             if (newDp > dpChar[to]) {
@@ -334,6 +356,8 @@ int charCountMaxLoopless(Graph * rawGraph, vector<int>* topo,int head, int tail,
             }
         }
     }
+
+    //TODO 单字母
 
     int maxEnd = 0;
     if(tail >= 0) {
@@ -347,7 +371,7 @@ int charCountMaxLoopless(Graph * rawGraph, vector<int>* topo,int head, int tail,
     }
 
     if (dpChar[maxEnd] <= 1) {
-        return 0;
+        throw CoreException(-NO_CHAIN);
     }
 
     vector<string>* wordCountMaxChain = new vector<string>();
@@ -369,17 +393,19 @@ int charCountMaxLoopless(Graph * rawGraph, vector<int>* topo,int head, int tail,
 
     int len=0;
     ofstream outfile;
-    outfile.open("result.txt");
-    cout << "-c loopless" << endl;
-    cout << wordCountMaxChain->size() << endl ;
+    outfile.open("solution.txt");
+
+    //cout << to_string(wordCountMaxChain->size()) << endl ;
     reverse(wordCountMaxChain -> begin(), wordCountMaxChain -> end());
     auto s = wordCountMaxChain -> begin();
     while(s != wordCountMaxChain -> end()) {
-        cout << (*s) << ' ' ;
+        cout << (*s) << endl ;
         outfile << (*s) << endl ;
         result[len++]=(char *)(*s).data();
         s++;
     }
+
+    outfile.close();
 
     return wordCountMaxChain->size();
 }

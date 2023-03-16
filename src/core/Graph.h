@@ -15,11 +15,15 @@ private:
     int inDegree[ALPHA_SIZE]{};
 
     vector <Edge*> edgesOut[ALPHA_SIZE];
+    vector <Edge*> edgesNOut[ALPHA_SIZE];
     vector <int> edgesOutPoints[ALPHA_SIZE];
     vector <Edge*> edges;
 
+
     int selfLoopSum[ALPHA_SIZE]{};
     vector <Edge*> selfEdge[ALPHA_SIZE];
+
+    bool beforeTopoHasSelfLoop = false;
 
 
 public:
@@ -28,17 +32,20 @@ public:
         memset(inDegree, 0, (26 << 2));
     }
 
-    //Graph(char * inputWord[], int wordCnt) {
     explicit Graph(char* words[], int len, int reject) {
         pointNum=26;
         int in[ALPHA_SIZE];
         int out[ALPHA_SIZE];
         memset(in, 0, 26<<2);
         memset(out, 0, 26<<2);
-        //for(int i=0;i<wordCnt;i++) {
+
+        set<string> removeRepeat;
+
         for (int i=0;i<len;i++) {
-            if (words[i] == NULL || ((words[i][0]-'a')==reject)) continue;
+            if (words[i] == NULL || strlen(words[i]) < 1 || ((words[i][0]-'a')==reject)) continue;
             string tmp = words[i];
+            if(removeRepeat.find(tmp)!=removeRepeat.end()) continue;
+            else removeRepeat.insert(tmp);
             Edge * _edge = new Edge(tmp);
             int s = _edge -> getStart();
             int e = _edge -> getEnd();
@@ -46,6 +53,7 @@ public:
             in[e]++;
             out[s]++;
         }
+        if(removeRepeat.size()<2) throw CoreException(-2);
 
         for (int i=0;i<ALPHA_SIZE;i++) {
             if (in[i]==1 && out[i]==1 && (!edgesMartrix[i][i].empty())) {
@@ -67,18 +75,23 @@ public:
             }
         }
 
-        //calOutPoints()
+        bool afterRemoveHasEdge = false;
         for(int i=0;i<ALPHA_SIZE;i++){
             for(int j=0;j<ALPHA_SIZE;j++){
                 if (edgesMartrix[i][j].empty()) continue;
+                afterRemoveHasEdge=true;
                 if (i==j) {
                     for (Edge * e: edgesMartrix[i][i]){
                         selfLoopSum[i]+=e->getWeight();
                     }
+                    if(edgesMartrix[i][i].size()>1) beforeTopoHasSelfLoop=true;
                     continue;
                 }
                 edgesOutPoints[i].push_back(j);
             }
+        }
+        if(!afterRemoveHasEdge) {
+            throw CoreException(-2);
         }
     }
 
@@ -88,9 +101,13 @@ public:
         int out[ALPHA_SIZE];
         memset(in, 0, 26<<2);
         memset(out, 0, 26<<2);
-        //for(int i=0;i<wordCnt;i++) {
+
+        set<string> removeRepeat;
         for (int i=0;i<len;i++) {
             string tmp = words[i];
+            if (words[i] == NULL || strlen(words[i]) < 1 ) continue;
+            if(removeRepeat.find(tmp)!=removeRepeat.end()) continue;
+            else removeRepeat.insert(tmp);
             Edge * _edge = new Edge(tmp);
             int s = _edge -> getStart();
             int e = _edge -> getEnd();
@@ -98,6 +115,7 @@ public:
             in[e]++;
             out[s]++;
         }
+        if(removeRepeat.size()<2) throw CoreException(-2);
 
         for (int i=0;i<ALPHA_SIZE;i++) {
             if (in[i]==1 && out[i]==1 && (!edgesMartrix[i][i].empty())) {
@@ -119,40 +137,35 @@ public:
             }
         }
 
-        //calOutPoints()
+        bool afterRemoveHasEdge=false;
         for(int i=0;i<ALPHA_SIZE;i++){
             for(int j=0;j<ALPHA_SIZE;j++){
                 if (edgesMartrix[i][j].empty()) continue;
+                afterRemoveHasEdge=true;
                 if (i==j) {
                     for (Edge * e: edgesMartrix[i][i]){
                         selfLoopSum[i]+=e->getWeight();
                     }
+                    if(edgesMartrix[i][i].size()>1) beforeTopoHasSelfLoop=true;
                     continue;
                 }
                 edgesOutPoints[i].push_back(j);
             }
+        }
+        if(!afterRemoveHasEdge) {
+            throw CoreException(-2);
         }
     }
 
-    void calOutPoints(){
-        for(int i=0;i<ALPHA_SIZE;i++){
-            for(int j=0;j<ALPHA_SIZE;j++){
-                if (edgesMartrix[i][j].empty()) continue;
-                if (i==j) {
-                    for (Edge * e: edgesMartrix[i][i]){
-                        selfLoopSum[i]+=e->getWeight();
-                    }
-                    continue;
-                }
-                edgesOutPoints[i].push_back(j);
-            }
-        }
+    bool hasSelfLoop(){
+        return beforeTopoHasSelfLoop;
     }
 
     void addEdge(Edge* _edge) {
         int s = _edge -> getStart();
         int e = _edge -> getEnd();
         edgesMartrix[s][e].push_back(_edge);
+
 
         if (s == e){
             selfEdge[s].push_back(_edge);
@@ -168,6 +181,7 @@ public:
         int s = _edge -> getStart();
         int e = _edge -> getEnd();
         //edgesMartrix[s][e].push_back(_edge);
+        edgesNOut[s].push_back(_edge);
 
         if (s == e){
             selfEdge[s].push_back(_edge);
@@ -185,6 +199,10 @@ public:
 
     vector <Edge*>* getOutEdges(int s) {
         return &(edgesOut[s]);
+    }
+
+    vector <Edge*>* getNOutEdges(int s) {
+        return &(edgesNOut[s]);
     }
 
     int getPointNum() const {
@@ -220,5 +238,5 @@ int gen_chain_char(char* words[], int len, char* result[], char head, char tail,
 int gen_chain_word(char* words[], int len, char* result[], char head, char tail, char reject, bool enable_loop);
 void sccInnerDfsChar(Graph * rawGraph,int start, int now, int length);
 
-const char* gui_engine(const char* input, int type, char head, char tail, bool weighted) ;
+const char* vuetifyAPI(const char* input, int type, char head, char tail, char reject, bool weighted) ;
 #endif //WORDCHAIN_GRAPH_H

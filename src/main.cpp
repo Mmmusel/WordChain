@@ -1,8 +1,30 @@
 #include "main.h"
 #include "input.h"
 #include "core/Graph.h"
+int main(int argc, char *argv[]){
+    try{
+        parseCmd(argc,argv);
+    }
+    catch (InPutException &e){
+        cout << e.GetInfo() <<endl;
+        ofstream outfile;
+        outfile.open("solution.txt");
+        outfile.close();
+        return 0;
+    }
+    catch (CoreException &ee){
+        if(ee.GetInfo()!="CoreError: No Chain"){
+            cout << ee.GetInfo() <<endl;
+        }
+        ofstream outfile;
+        outfile.open("solution.txt");
+        outfile.close();
 
-int main(int argc, char *argv[]) {
+        return 0;
+    }
+
+}
+int parseCmd(int argc, char *argv[]) {
     vector<int> filename;
     bool loop_enabled=false;
 
@@ -13,24 +35,27 @@ int main(int argc, char *argv[]) {
         char* str = argv[i];
         int len = (int)strlen(str);
 
-        if(len<2) continue;
+        if(len<2) throw InPutException("Cmd Input Error: cmd format error");
+        //TODO:cmd空格
 
         if (str[0]=='-'){
             if (str[1]=='n' || str[1]=='w' || str[1]=='c') {
-                if(!chainCmd.empty())
-
-                THROW(throw MyException("to many cmd. -n -w -c can only use one"));
-
-                chainCmd.push_back(str[1]);
+                if(chainCmd.empty())
+                {
+                    chainCmd.push_back(str[1]);
+                }
+                else throw InPutException("Cmd Input Error: to many cmd. -n -w -c can only choose one and use once");
             } else if (str[1] == 'r'){
-                loop_enabled=true;
-
+                loop_enabled = true;
             } else if (str[1]=='h' || str[1]=='t' || str[1]=='j') {
                 char x = str[1];
-                if (i<argc) {
+                if (i<argc-1) {
                     i++;
                     if(strlen(argv[i])!=1) {
-                        THROW(throw MyException(to_string((str[1]))+" must follow a char"));
+                        string errorInfo = "Cmd Input Error: ";
+                        errorInfo.append(str);
+                        errorInfo.append(" must followed by one char");
+                        throw InPutException(errorInfo);
                     }
 
                     int charCmd;
@@ -40,65 +65,79 @@ int main(int argc, char *argv[]) {
                         charCmd=1;
                     } else charCmd=2;
                     if (htj[charCmd]!='`'){
-                        THROW(throw MyException("redeclare  cmd of "+ to_string(x)));
+                        string errorInfo = "Cmd Input Error: redeclaration of";
+                        errorInfo.append(str);
+                        throw InPutException(errorInfo);
                     }
 
                     char c=argv[i][0];
-
                     if (isupper(c)) c= tolower(c);
                     if (islower(c)) {
                         htj[charCmd]=c;
                     } else {
-                        THROW(throw MyException(to_string((str[1]))+" must follow a char"));
+                        string errorInfo = "Cmd Input Error: ";
+                        errorInfo.append(str);
+                        errorInfo.append(" must followed by a char");
+                        throw InPutException(errorInfo);
                     }
-
                 } else {
-                    THROW(throw MyException(to_string((str[1]))+" must follow a char"));
+                    string errorInfo = "Cmd Input Error: ";
+                    errorInfo.append(str);
+                    errorInfo.append(" must followed by a char");
+                    throw InPutException(errorInfo);
                 }
+            } else {
+                throw InPutException("Cmd Input Error: undefined cmd.");
             }
         }
         else if (len > 3) {
             if (str[len - 3] == 't' && str[len - 2] == 'x' && str[len - 1] == 't')
                 filename.push_back(i);
-        }
+            else throw InPutException("File Input Error: filename must be *.txt");
+        } else throw InPutException("Cmd Input Error: cmd format error");
     }
+    if (chainCmd.empty())
+        throw InPutException("Cmd Input Error: no chain cmd. -n -w -c must use one");
 
     if (filename.empty()) {
-        THROW(throw MyException("please enter right filename"));
-        return 0;
+        throw InPutException("File Input Error: please enter a filename");
     } else if (filename.size()>1) {
-        THROW(throw MyException("filename must == 1"));
-        return 0;
+        throw InPutException("File Input Error: you can only input one file");
     }
 
+    char cmdType = chainCmd.back();
+    if(cmdType=='n') {
+        if (loop_enabled) throw InPutException("Cmd Input Error: -n should use seperately without -r");
+        if (htj[0]!='`' || htj[1]!='`' || htj[2]!='`') throw InPutException("Cmd Input Error: -n should use seperately without -h -t -j");
+
+    }
+
+    if (htj[0]!='`' && htj[0] == htj[2])
+        throw InPutException("-h -j use same char. No chain.");
+
+
     vector<char*> words(32768, nullptr);
-    int len=0;
-    THROW(len = splitWord(words.data(),argv[filename.front()],htj[2]-'a'));
-
-    FILE *file = nullptr;
-    fopen_s(&file, argv[filename.front()], "r");
-
-    if (file == nullptr) {
-        throw MyException("file not exist");
+    int len = splitWord(words.data(),argv[filename.front()],htj[2]-'a');
+    if (len<2)
+        //throw InPutException("File Input Error: at least two different words");
+    {
+        ofstream outfile;
+        outfile.open("solution.txt");
+        outfile.close();
+        return 0;
     }
 
     vector<char*> result(32768, nullptr);
-    char x = chainCmd.back();
-    try{
-    if(x=='n') {
+
+    if(cmdType=='n') {
         gen_chains_all(words.data(),len,result.data());
-
-    } else if (x=='w') {
+    } else if (cmdType=='w') {
         gen_chain_word(words.data(),len,result.data(),
-                       htj[0],htj[1],htj[2],loop_enabled);
-
+                       htj[0]=='`'?0:htj[0],htj[1]=='`'?0:htj[1],htj[2]=='`'?0:htj[2],loop_enabled);
     } else {
         gen_chain_char(words.data(),len,result.data(),
-                       htj[0],htj[1],htj[2],loop_enabled);
-    }}
-    catch (MyException &e){
-        cout << e.GetInfo() <<endl;
-        return 0;
+                       htj[0]=='`'?0:htj[0],htj[1]=='`'?0:htj[1],htj[2]=='`'?0:htj[2],loop_enabled);
     }
+
     return 0;
 }

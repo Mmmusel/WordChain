@@ -138,42 +138,46 @@ void removeLoop(Graph *graph){
 
 vector<Edge*>* chainBuf;
 
-
-//string allChainBuf;
-
 int gen_chains_all(char* words[], int len,char * result[]){
     Graph * g=new Graph(words,len);
+    if(g->hasSelfLoop()) throw CoreException(-1);
     chainBuf = new vector<Edge*>();
     int allChainCount=0;
-    //allChainBuf="";
-    allChainCount=0;
     vector<string>* loopChain = new vector<string>();
     vector<int>* topo = new vector<int>;
     int r = topoSort(g, topo);
-    CATCH(r);
+    if(r) throw CoreException(-1);
     for(int i = 0; i < ALPHA_SIZE; i++){
         dfsAllChain(g,i,loopChain);
     }
 
+
+    if(loopChain->size()==0) throw CoreException(-2);
+
     ofstream outfile;
-    outfile.open("result.txt");
-    cout << "-c loop" << endl;
-    cout << loopChain->size() << endl;
+    outfile.open("solution.txt");
+
+    outfile << to_string(loopChain->size()) << endl;
+    cout << to_string(loopChain->size()) << endl;
     reverse(loopChain -> begin(), loopChain -> end());
     auto s = loopChain -> begin();
     while(s != loopChain -> end()) {
-        cout << (*s) << ' ' ;
-        outfile << (*s) << endl ;
+        cout << (*s)  ;
+        outfile << (*s)  ;
         result[allChainCount++]=(char *)(*s).data();
         s++;
     }
+
+    outfile.close();
+
 
     return allChainCount;
 }
 
 void dfsAllChain(Graph *g,int start, vector<string>* dfsChains){
-    vector <Edge*>* edges = g -> getOutEdges(start);
+    vector <Edge*>* edges = g -> getNOutEdges(start);
     for (auto e : *edges) {
+        if(std::find(chainBuf->begin(), chainBuf->end(),e)!=chainBuf->end()) continue;
         chainBuf -> push_back(e);
         if(chainBuf -> size() > 1) printChain(chainBuf,dfsChains);
 
@@ -195,21 +199,8 @@ void printChain(vector <Edge*> *chain,vector<string> *dfsChains){
 
 }
 
-
-//程序连续执行多条指令前需要重置
-void resizePoint2PointEdges(Graph * rawGraph){
-    for(Edge* e : *(rawGraph -> getEdges())) {
-        int from = e->getStart();
-        int to = e->getEnd();
-        //边[端点属于一个连通分量]加进局部sccGraph
-        //边[端点不在一个连通分量]加进大图looplessGraph,此时端点的id不是字母，代表sccId
-        if (point2sccID[from] == point2sccID[to]) {
-            point2pointEdges[from][to].push_back(e);
-        }
-    }
-}
-
 const char* vuetifyAPI(const char* input, int type, char head, char tail, char reject,  bool weighted) {
+    stringstream ss;
     string input_copy(input);
     vector<const char*> words;
     for (int i = 0, las = -1, size = (int) strlen(input); i < size; ++i) {
@@ -229,27 +220,38 @@ const char* vuetifyAPI(const char* input, int type, char head, char tail, char r
             c = 0;
         }
     }
+
+
+    if(words.empty()){
+        ss << "WordList-GUI: " <<"File Input Error: at least two different words" << endl;
+        return (new string(ss.str()))->data();
+    }
     vector<char*> temp(32768, nullptr);
 
     int ret_val = 0;
+    try {
+        if(type==0){
+            ret_val=gen_chains_all(const_cast<char **>(words.data()), words.size(), temp.data());
+        } else if (weighted) {
+            ret_val=gen_chain_word(const_cast<char **>(words.data()), words.size(), temp.data(),
+                                   head,tail,reject,type==3);
+        }else {
+            ret_val=gen_chain_char(const_cast<char **>(words.data()), words.size(), temp.data(),
+                                   head,tail,reject,type==3);
+        }
+    }
+    catch (CoreException &ee){
 
-
-    if(type==0){
-        ret_val=gen_chains_all(const_cast<char **>(words.data()), words.size(), temp.data());
-    } else if (weighted) {
-        ret_val=gen_chain_word(const_cast<char **>(words.data()), words.size(), temp.data(),
-                               head,tail,reject,type==3);
-    }else {
-        ret_val=gen_chain_char(const_cast<char **>(words.data()), words.size(), temp.data(),
-                               head,tail,reject,type==3);
+        ss << "WordList-GUI: " <<ee.GetInfo() << endl;
+        return (new string(ss.str()))->data();
     }
 
-    stringstream ss;
-
     if (type == 0) {
-        ss << ret_val << endl;
-        ss << temp[0] << endl;
-    } else {
+        ss << to_string(ret_val) << endl;
+        for (int i = 0; i < ret_val; ++i) {
+            ss << temp[i] ;
+        }
+    }else {
         for (int i = 0; i < ret_val; ++i) {
             ss << temp[i] << endl;
         }

@@ -8,7 +8,7 @@ int splitWord(char *words[],const char *fileName, int reject) {
     fopen_s(&file, fileName, "r");
 
     if (file == nullptr) {
-        throw MyException("file not exist");
+        throw InPutException("File Input Error: file not exist");
     }
 
     int c;

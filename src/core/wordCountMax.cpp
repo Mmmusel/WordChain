@@ -124,6 +124,8 @@ int LoopGraphMaxWordDP(Graph * rawGraph, int head, int tail) {
             }
         }
     }
+    cout << sccOuterDp[returnEndPoint] << endl;
+    if(sccOuterDp[returnEndPoint]<2) throw CoreException(-NO_CHAIN);
     return returnEndPoint;
 }
 
@@ -181,16 +183,27 @@ int printWordMaxChain(Graph * rawGraph, int now ,char * result[]) {
             int from = preSCCPoint[now];
             vector<string>* subChain = new vector<string>();
 
+            if(now==2){
+                int k=1;
+            }
+
             memset(toPointLoopWeightAdded,0,ALPHA_SIZE);
+            wordCnt=0;
             dfsSccWordMaxChain(rawGraph, from, now, sccInnerDp[from][now], subChain);
+
+            if(now==2){
+                int k=1;
+            }
 
             //memset一个就行了，上次dfs之后边的数组应该被回溯完整了
             reverse(subChain -> begin(), subChain -> end());
             auto s = subChain -> begin();
             while(s != subChain -> end()) {
                 loopChain->push_back(*s);
+
                 s++;
             }
+
             now = from;
         }
         else {
@@ -216,38 +229,61 @@ int printWordMaxChain(Graph * rawGraph, int now ,char * result[]) {
         }
     }
     ofstream outfile;
-    outfile.open("result.txt");
+    outfile.open("solution.txt");
     int len=0;
-    cout << "-w loop" << endl;
-    cout << loopChain->size() << endl;
+
+
     reverse(loopChain -> begin(), loopChain -> end());
     auto s = loopChain -> begin();
     while(s != loopChain -> end()) {
-        cout << (*s) << ' ' ;
+        cout << (*s) << endl ;
         outfile << (*s) << endl ;
         result[len++]=(char *)(*s).data();
         s++;
     }
 
+    outfile.close();
+
     return loopChain->size();
 }
 
 int gen_chain_word(char* words[], int len, char* result[], char head, char tail, char reject, bool enable_loop) {
+    if(head != 0 && !isalpha(head)) throw CoreException(-3);
+    if(tail != 0 && !isalpha(tail)) throw CoreException(-3);
+    if(reject != 0 && !isalpha(reject)) throw CoreException(-3);
+
+    if(head == 0 || !isalpha(head)) head='`';
+    if(tail == 0 || !isalpha(tail)) tail='`';
+    if(reject == 0 || !isalpha(reject)) reject='`';
+
+    head = tolower(head);
+    tail = tolower(tail);
+    reject = tolower(reject);
+
     int headInt=head-'a';
     int tailInt=tail-'a';
     int rejectInt=reject-'a';
 
     Graph * rawGraph =new Graph(words,len,rejectInt);
     vector<int> * topo = new vector<int>;
+    if(rawGraph->hasSelfLoop()) {
+        if (!enable_loop) {
+            throw CoreException(-1);
+        } else {
+            topoSort(rawGraph, topo);
+            return wordCountMaxLoop(rawGraph, headInt, tailInt, result);
+        }
+    }
+
+
     int r = topoSort(rawGraph, topo);
     if(enable_loop) {
-
         if(r==0){
             return wordCountMaxLoopless(rawGraph, topo, headInt, tailInt, result);
         }
         return wordCountMaxLoop(rawGraph, headInt, tailInt, result);
     }
-    if (r) throw MyException(r);
+    if (r) throw CoreException(-LOOP);
     return wordCountMaxLoopless(rawGraph, topo, headInt, tailInt, result);
 }
 
@@ -303,10 +339,8 @@ int wordCountMaxLoopless(Graph* rawGraph, vector<int> * topo,int head, int tail,
         }
     }
 
-
     if (dp[maxEnd] <= 1) {
-        cout << "no chain" << endl;
-        return 0;
+        throw CoreException(-NO_CHAIN);
     }
 
     vector<string>* wordCountMaxChain = new vector<string>();
@@ -326,19 +360,20 @@ int wordCountMaxLoopless(Graph* rawGraph, vector<int> * topo,int head, int tail,
     }
 
     ofstream outfile;
-    outfile.open("result.txt");
+    outfile.open("solution.txt");
     int len=0;
-    cout << "-w loopless" << endl;
-    cout << wordCountMaxChain->size() << endl ;
+
+
     reverse(wordCountMaxChain -> begin(), wordCountMaxChain -> end());
     auto s = wordCountMaxChain -> begin();
     while(s != wordCountMaxChain -> end()) {
-        cout << (*s) << ' ' ;
+        cout << (*s) << endl ;
         outfile << (*s) << endl ;
         result[len++]=(char *)(*s).data();
         s++;
     }
 
+    outfile.close();
 
     return wordCountMaxChain->size();
 }
