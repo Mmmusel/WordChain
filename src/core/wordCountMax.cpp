@@ -124,7 +124,7 @@ int LoopGraphMaxWordDP(Graph * rawGraph, int head, int tail) {
             }
         }
     }
-    cout << sccOuterDp[returnEndPoint] << endl;
+
     if(sccOuterDp[returnEndPoint]<2) throw CoreException(-NO_CHAIN);
     return returnEndPoint;
 }
@@ -264,6 +264,13 @@ int gen_chain_word(char* words[], int len, char* result[], char head, char tail,
     int tailInt=tail-'a';
     int rejectInt=reject-'a';
 
+    Graph * hasRGraph =new Graph(words,len);
+    vector<int> * hasRTopo = new vector<int>;
+    int r=topoSort(hasRGraph, hasRTopo);
+    if (r && !enable_loop) throw CoreException(-LOOP);
+
+
+
     Graph * rawGraph =new Graph(words,len,rejectInt);
     vector<int> * topo = new vector<int>;
     if(rawGraph->hasSelfLoop()) {
@@ -276,7 +283,8 @@ int gen_chain_word(char* words[], int len, char* result[], char head, char tail,
     }
 
 
-    int r = topoSort(rawGraph, topo);
+
+    topoSort(rawGraph, topo);
     if(enable_loop) {
         if(r==0){
             return wordCountMaxLoopless(rawGraph, topo, headInt, tailInt, result);

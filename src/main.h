@@ -28,14 +28,14 @@ public:
     {
     }
 
-    explicit InPutException(int errorCode)
+    /*explicit InPutException(int errorCode)
     {
         if (errorCode==-1) {
             Info = "ERROR: ";
         } else {
             Info = "ERROR";
         }
-    }
+    }*/
 
     /** 获得异常信息
      * @return 异常信息
@@ -54,9 +54,10 @@ private:
 
 public:
     /** 默认构造函数 */
-    explicit CoreException(string  InInfo): Info(std::move(InInfo))
+    /*explicit CoreException(string  InInfo): Info(std::move(InInfo))
     {
     }
+    */
 
     explicit CoreException(int errorCode)
     {

@@ -36,9 +36,16 @@ int parseCmd(int argc, char *argv[]) {
         int len = (int)strlen(str);
 
         if(len<2) throw InPutException("Cmd Input Error: cmd format error");
-        //TODO:cmd空格
 
         if (str[0]=='-'){
+            if (len > 2) {
+                if (len > 3) {
+                    if (str[len - 4] == '.' && str[len - 3] == 't' && str[len - 2] == 'x' && str[len - 1] == 't')
+                        filename.push_back(i);
+                    else throw InPutException("Cmd Input Error: cmd format error");
+                }
+                else throw InPutException("Cmd Input Error: cmd format error");
+            }
             if (str[1]=='n' || str[1]=='w' || str[1]=='c') {
                 if(chainCmd.empty())
                 {
@@ -59,12 +66,12 @@ int parseCmd(int argc, char *argv[]) {
                     }
 
                     int charCmd;
-                    if (x=='h'){
+                    if (x=='h') {
                         charCmd=0;
                     } else if (x=='t') {
                         charCmd=1;
                     } else charCmd=2;
-                    if (htj[charCmd]!='`'){
+                    if (htj[charCmd]!='`') {
                         string errorInfo = "Cmd Input Error: redeclaration of";
                         errorInfo.append(str);
                         throw InPutException(errorInfo);
@@ -91,7 +98,7 @@ int parseCmd(int argc, char *argv[]) {
             }
         }
         else if (len > 3) {
-            if (str[len - 3] == 't' && str[len - 2] == 'x' && str[len - 1] == 't')
+            if (str[len-4]=='.' && str[len - 3] == 't' && str[len - 2] == 'x' && str[len - 1] == 't')
                 filename.push_back(i);
             else throw InPutException("File Input Error: filename must be *.txt");
         } else throw InPutException("Cmd Input Error: cmd format error");
@@ -117,10 +124,8 @@ int parseCmd(int argc, char *argv[]) {
 
 
     vector<char*> words(32768, nullptr);
-    int len = splitWord(words.data(),argv[filename.front()],htj[2]-'a');
-    if (len<2)
-        //throw InPutException("File Input Error: at least two different words");
-    {
+    int len = splitWord(words.data(),argv[filename.front()]);
+    if (len<2) {
         ofstream outfile;
         outfile.open("solution.txt");
         outfile.close();
@@ -132,8 +137,7 @@ int parseCmd(int argc, char *argv[]) {
     if(cmdType=='n') {
         gen_chains_all(words.data(),len,result.data());
     } else if (cmdType=='w') {
-        gen_chain_word(words.data(),len,result.data(),
-                       htj[0]=='`'?0:htj[0],htj[1]=='`'?0:htj[1],htj[2]=='`'?0:htj[2],loop_enabled);
+        gen_chain_word(words.data(),len,result.data(), htj[0]=='`'?0:htj[0],htj[1]=='`'?0:htj[1],htj[2]=='`'?0:htj[2],loop_enabled);
     } else {
         gen_chain_char(words.data(),len,result.data(),
                        htj[0]=='`'?0:htj[0],htj[1]=='`'?0:htj[1],htj[2]=='`'?0:htj[2],loop_enabled);

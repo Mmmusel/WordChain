@@ -228,7 +228,7 @@ const char* vuetifyAPI(const char* input, int type, char head, char tail, char r
     }
     vector<char*> temp(32768, nullptr);
 
-    int ret_val = 0;
+    int ret_val;
     try {
         if(type==0){
             ret_val=gen_chains_all(const_cast<char **>(words.data()), words.size(), temp.data());

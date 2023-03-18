@@ -3,7 +3,7 @@
 
 set<string> word;
 
-int splitWord(char *words[],const char *fileName, int reject) {
+int splitWord(char *words[],const char *fileName) {
     FILE *file = nullptr;
     fopen_s(&file, fileName, "r");
 

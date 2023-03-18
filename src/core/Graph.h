@@ -42,7 +42,7 @@ public:
         set<string> removeRepeat;
 
         for (int i=0;i<len;i++) {
-            if (words[i] == NULL || strlen(words[i]) < 1 || ((words[i][0]-'a')==reject)) continue;
+            if (words[i] == nullptr || strlen(words[i]) < 1 || ((words[i][0]-'a')==reject)) continue;
             string tmp = words[i];
             if(removeRepeat.find(tmp)!=removeRepeat.end()) continue;
             else removeRepeat.insert(tmp);
@@ -105,7 +105,7 @@ public:
         set<string> removeRepeat;
         for (int i=0;i<len;i++) {
             string tmp = words[i];
-            if (words[i] == NULL || strlen(words[i]) < 1 ) continue;
+            if (words[i] == nullptr || strlen(words[i]) < 1 ) continue;
             if(removeRepeat.find(tmp)!=removeRepeat.end()) continue;
             else removeRepeat.insert(tmp);
             Edge * _edge = new Edge(tmp);
@@ -157,7 +157,7 @@ public:
         }
     }
 
-    bool hasSelfLoop(){
+    bool hasSelfLoop() {
         return beforeTopoHasSelfLoop;
     }
 
