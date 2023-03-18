@@ -157,7 +157,7 @@ public:
         }
     }
 
-    bool hasSelfLoop() {
+    bool hasSelfLoop() const {
         return beforeTopoHasSelfLoop;
     }
 

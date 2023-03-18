@@ -10,27 +10,27 @@ private:
     string word;
 
 public:
-    Edge(string& _word) {
+    explicit Edge(string& _word) {
         start = _word.front() - 'a';
         end = _word.back() - 'a';
-        weight = _word.length();
+        weight = (int)_word.length();
         word = _word;
     }
 
     Edge(const string& _word, int _s, int _e) {
         word = _word;
-        weight = _word.length();
+        weight = (int)_word.length();
         start = _s;
         end = _e;
     }
 
-    int getStart() {
+    int getStart() const {
         return start;
     }
-    int getEnd() {
+    int getEnd() const {
         return end;
     }
-    int getWeight() {
+    int getWeight() const {
         return weight;
     }
     string getWord(){

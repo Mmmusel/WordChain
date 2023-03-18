@@ -41,7 +41,7 @@ void sccInnerDfs(Graph * rawGraph, int start, int now, int length) {
         Edge * e = point2pointEdges[now][to].back();
         point2pointEdges[now][to].pop_back();
 
-        int toSelfWeight = (toPointLoopWeightAdded[to] ? 0:(rawGraph->getSelfEdge(to)->size()));
+        int toSelfWeight = (toPointLoopWeightAdded[to] ? 0:(int)(rawGraph->getSelfEdge(to)->size()));
         int newDp=length+1+toSelfWeight;
 
         sccInnerDp[start][to]=max(sccInnerDp[start][to], newDp);
@@ -62,11 +62,11 @@ extern int point2sccID[ALPHA_SIZE];
 int LoopGraphMaxWordDP(Graph * rawGraph, int head, int tail) {
     if (head < 0) {
         for (int i = 0; i < ALPHA_SIZE; i++) {
-            sccOuterDp[i] = (rawGraph->getSelfEdge(i)->empty() ? 0 : rawGraph->getSelfEdge(i)->size());
+            sccOuterDp[i] = (rawGraph->getSelfEdge(i)->empty() ? 0 : (int)rawGraph->getSelfEdge(i)->size());
         }
     } else {
         memset(sccOuterDp,255,(ALPHA_SIZE << 2));
-        sccOuterDp[head] = (rawGraph->getSelfEdge(head)->empty() ? 0 : rawGraph->getSelfEdge(head)->size());
+        sccOuterDp[head] = (rawGraph->getSelfEdge(head)->empty() ? 0 : (int)rawGraph->getSelfEdge(head)->size());
     }
 
 
@@ -74,7 +74,7 @@ int LoopGraphMaxWordDP(Graph * rawGraph, int head, int tail) {
     memset(preEdge, 0, ALPHA_SIZE << 2);
     memset(preSCCPoint, 255, ALPHA_SIZE << 2);
 
-    vector<int> *sccTopo = new vector<int>;
+    auto *sccTopo = new vector<int>;
     topoSort(looplessGraph, sccTopo);
 
     for (int i = 0; i < looplessGraph->getPointNum(); i++) {
@@ -106,7 +106,7 @@ int LoopGraphMaxWordDP(Graph * rawGraph, int head, int tail) {
             string tmp = e->getWord();
             int start = tmp.front() - 'a';
             int end = tmp.back() - 'a';
-            int to_weight = rawGraph->getSelfEdge(end)->size();
+            int to_weight = (int)rawGraph->getSelfEdge(end)->size();
             if (sccOuterDp[end] < sccOuterDp[start] + 1 + to_weight) {
                 sccOuterDp[end] = sccOuterDp[start] + 1 + to_weight;
                 preEdge[end] = e;
@@ -138,9 +138,9 @@ bool dfsSccWordMaxChain(Graph * rawGraph, int now, int end, int length, vector<s
             for (int i = 1; i <= wordCnt; i++) {
                 sccInnerChain->push_back(wordList[i]);
             }
-            return 1;
+            return true;
         }
-        else { return 0; }
+        else { return false; }
     }
 
     toPointLoopWeightAdded[now]++;
@@ -154,7 +154,7 @@ bool dfsSccWordMaxChain(Graph * rawGraph, int now, int end, int length, vector<s
         int lastCnt = wordCnt;
         wordList[++wordCnt] = e->getWord();
 
-        int toPointSelfLoopWeight = (toPointLoopWeightAdded[to]? 0:rawGraph->getSelfEdge(to)->size());
+        int toPointSelfLoopWeight = (toPointLoopWeightAdded[to]? 0:(int)rawGraph->getSelfEdge(to)->size());
         if (toPointSelfLoopWeight > 0) {
             for(Edge * loopE : *(rawGraph->getSelfEdge(to))) {
                 wordList[++wordCnt] = loopE->getWord();
@@ -162,17 +162,17 @@ bool dfsSccWordMaxChain(Graph * rawGraph, int now, int end, int length, vector<s
         }
 
         if (dfsSccWordMaxChain(rawGraph, to, end, length - 1 - toPointSelfLoopWeight, sccInnerChain)) {
-            return 1;
+            return true;
         }
         wordCnt = lastCnt;
         point2pointEdges[now][to].push_back(e);
     }
     toPointLoopWeightAdded[now]--;
-    return 0;
+    return false;
 }
 
 int printWordMaxChain(Graph * rawGraph, int now ,char * result[]) {
-    vector<string>* loopChain = new vector<string>();
+    auto* loopChain = new vector<string>();
 
     wordCnt=0;
 
@@ -181,19 +181,12 @@ int printWordMaxChain(Graph * rawGraph, int now ,char * result[]) {
         if (!inSCC && preSCCPoint[now] >= 0) {
             inSCC = true;
             int from = preSCCPoint[now];
-            vector<string>* subChain = new vector<string>();
-
-            if(now==2){
-                int k=1;
-            }
+            auto* subChain = new vector<string>();
 
             memset(toPointLoopWeightAdded,0,ALPHA_SIZE);
             wordCnt=0;
             dfsSccWordMaxChain(rawGraph, from, now, sccInnerDp[from][now], subChain);
 
-            if(now==2){
-                int k=1;
-            }
 
             //memset一个就行了，上次dfs之后边的数组应该被回溯完整了
             reverse(subChain -> begin(), subChain -> end());
@@ -210,7 +203,7 @@ int printWordMaxChain(Graph * rawGraph, int now ,char * result[]) {
             //跨scc的边，把终点所有自环加进去，再加上前向边
             inSCC = false;
             Edge* e = preEdge[now];
-            int toPointSelfLoopWeight = rawGraph->getSelfEdge(now)->size();
+            int toPointSelfLoopWeight = (int)rawGraph->getSelfEdge(now)->size();
             if (toPointSelfLoopWeight > 0) {
                 for(Edge * loopE : *(rawGraph->getSelfEdge(now))) {
                     loopChain->push_back(loopE->getWord());
@@ -222,7 +215,7 @@ int printWordMaxChain(Graph * rawGraph, int now ,char * result[]) {
     }
     //TODO 封装
     //最起点的所有自环边
-    int toPointSelfLoopWeight = rawGraph->getSelfEdge(now)->size();
+    int toPointSelfLoopWeight = (int)rawGraph->getSelfEdge(now)->size();
     if (toPointSelfLoopWeight > 0) {
         for(Edge * loopE : *(rawGraph->getSelfEdge(now))) {
             loopChain->push_back(loopE->getWord());
@@ -244,7 +237,7 @@ int printWordMaxChain(Graph * rawGraph, int now ,char * result[]) {
 
     outfile.close();
 
-    return loopChain->size();
+    return (int)loopChain->size();
 }
 
 int gen_chain_word(char* words[], int len, char* result[], char head, char tail, char reject, bool enable_loop) {
@@ -256,23 +249,23 @@ int gen_chain_word(char* words[], int len, char* result[], char head, char tail,
     if(tail == 0 || !isalpha(tail)) tail='`';
     if(reject == 0 || !isalpha(reject)) reject='`';
 
-    head = tolower(head);
-    tail = tolower(tail);
-    reject = tolower(reject);
+    head = (char)tolower(head);
+    tail = (char)tolower(tail);
+    reject = (char)tolower(reject);
 
     int headInt=head-'a';
     int tailInt=tail-'a';
     int rejectInt=reject-'a';
 
-    Graph * hasRGraph =new Graph(words,len);
-    vector<int> * hasRTopo = new vector<int>;
+    auto * hasRGraph =new Graph(words,len);
+    auto * hasRTopo = new vector<int>;
     int r=topoSort(hasRGraph, hasRTopo);
     if (r && !enable_loop) throw CoreException(-LOOP);
 
 
 
-    Graph * rawGraph =new Graph(words,len,rejectInt);
-    vector<int> * topo = new vector<int>;
+    auto * rawGraph =new Graph(words,len,rejectInt);
+    auto * topo = new vector<int>;
     if(rawGraph->hasSelfLoop()) {
         if (!enable_loop) {
             throw CoreException(-1);
@@ -304,10 +297,10 @@ int wordCountMaxLoop(Graph* rawGraph, int head, int tail, char * result[]) {
 
 int wordCountMaxLoopless(Graph* rawGraph, vector<int> * topo,int head, int tail,char * result[]) {
     int dp[ALPHA_SIZE];
-    Edge* preEdge[ALPHA_SIZE];
+    Edge* preEdges[ALPHA_SIZE];
     //dp[i]：以字母i为结尾时，能形成的单词链最大长度
     //int cnt = graph -> getPointNum();
-    memset(preEdge, 0, sizeof(preEdge));
+    memset(preEdges, 0, sizeof(preEdges));
     chainBuf = new vector<Edge*>;
 
     if (head < 0) {
@@ -331,7 +324,7 @@ int wordCountMaxLoopless(Graph* rawGraph, vector<int> * topo,int head, int tail,
             int newDp = dp[from] + 1 + (rawGraph->getSelfEdge(to)->empty() ? 0 : 1);
             if (newDp > dp[to]) {
                 dp[to] = newDp;
-                preEdge[to] = e;
+                preEdges[to] = e;
             }
         }
     }
@@ -351,15 +344,15 @@ int wordCountMaxLoopless(Graph* rawGraph, vector<int> * topo,int head, int tail,
         throw CoreException(-NO_CHAIN);
     }
 
-    vector<string>* wordCountMaxChain = new vector<string>();
+    auto* wordCountMaxChain = new vector<string>();
 
     int nowEnd = maxEnd;
-    while (preEdge[nowEnd]) {
-        int nowStart = preEdge[nowEnd]->getStart();
+    while (preEdges[nowEnd]) {
+        int nowStart = preEdges[nowEnd]->getStart();
         if (!rawGraph->getSelfEdge(nowEnd)->empty()) {
             wordCountMaxChain->push_back(rawGraph->getSelfEdge(nowEnd)->front()->getWord());
         }
-        wordCountMaxChain->push_back(preEdge[nowEnd]->getWord());
+        wordCountMaxChain->push_back(preEdges[nowEnd]->getWord());
         nowEnd = nowStart;
     }
     //起点自环
@@ -383,5 +376,5 @@ int wordCountMaxLoopless(Graph* rawGraph, vector<int> * topo,int head, int tail,
 
     outfile.close();
 
-    return wordCountMaxChain->size();
+    return (int)wordCountMaxChain->size();
 }

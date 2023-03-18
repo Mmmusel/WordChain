@@ -78,7 +78,7 @@ int parseCmd(int argc, char *argv[]) {
                     }
 
                     char c=argv[i][0];
-                    if (isupper(c)) c= tolower(c);
+                    if (isupper(c)) c= (char)tolower(c);
                     if (islower(c)) {
                         htj[charCmd]=c;
                     } else {
@@ -137,10 +137,10 @@ int parseCmd(int argc, char *argv[]) {
     if(cmdType=='n') {
         gen_chains_all(words.data(),len,result.data());
     } else if (cmdType=='w') {
-        gen_chain_word(words.data(),len,result.data(), htj[0]=='`'?0:htj[0],htj[1]=='`'?0:htj[1],htj[2]=='`'?0:htj[2],loop_enabled);
+        gen_chain_word(words.data(),len,result.data(), htj[0]=='`'?'\0':htj[0],htj[1]=='`'?'\0':htj[1],htj[2]=='`'?'\0':htj[2],loop_enabled);
     } else {
         gen_chain_char(words.data(),len,result.data(),
-                       htj[0]=='`'?0:htj[0],htj[1]=='`'?0:htj[1],htj[2]=='`'?0:htj[2],loop_enabled);
+                       htj[0]=='`'?'\0':htj[0],htj[1]=='`'?'\0':htj[1],htj[2]=='`'?'\0':htj[2],loop_enabled);
     }
 
     return 0;

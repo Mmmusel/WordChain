@@ -91,11 +91,11 @@ set<int> point2points[ALPHA_SIZE];
 vector<Edge*> point2pointEdges[ALPHA_SIZE][ALPHA_SIZE];
 
 void removeLoop(Graph *graph){
-    for (int i=0;i<ALPHA_SIZE;i++) {
+    for (auto & point2pointEdge : point2pointEdges) {
         point2points->clear();
         sccId2Points->clear();
-        for (int j=0;j<ALPHA_SIZE;j++) {
-            point2pointEdges[i][j].clear();
+        for (auto & j : point2pointEdge) {
+            j.clear();
         }
     }
     sccGraph.clear();
@@ -115,7 +115,7 @@ void removeLoop(Graph *graph){
     }
 
     for (int i = 0; i < blockNum; i++) {
-        sccGraph.push_back(new Graph(sccId2Points[i].size()));
+        sccGraph.push_back(new Graph((int)sccId2Points[i].size()));
     }
     looplessGraph = new Graph(blockNum);
 
@@ -139,12 +139,12 @@ void removeLoop(Graph *graph){
 vector<Edge*>* chainBuf;
 
 int gen_chains_all(char* words[], int len,char * result[]){
-    Graph * g=new Graph(words,len);
+    auto * g=new Graph(words,len);
     if(g->hasSelfLoop()) throw CoreException(-1);
     chainBuf = new vector<Edge*>();
     int allChainCount=0;
-    vector<string>* loopChain = new vector<string>();
-    vector<int>* topo = new vector<int>;
+    auto* loopChain = new vector<string>();
+    auto* topo = new vector<int>;
     int r = topoSort(g, topo);
     if(r) throw CoreException(-1);
     for(int i = 0; i < ALPHA_SIZE; i++){
@@ -152,7 +152,7 @@ int gen_chains_all(char* words[], int len,char * result[]){
     }
 
 
-    if(loopChain->size()==0) throw CoreException(-2);
+    if(loopChain->empty()) throw CoreException(-2);
 
     ofstream outfile;
     outfile.open("solution.txt");
@@ -204,7 +204,7 @@ const char* vuetifyAPI(const char* input, int type, char head, char tail, char r
     string input_copy(input);
     vector<const char*> words;
     for (int i = 0, las = -1, size = (int) strlen(input); i < size; ++i) {
-        char& c = const_cast<char &>(input_copy.data()[i]);
+        char& c = const_cast<char &>(input_copy[i]);
         auto isalpha = [](char c) {
             return 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z';
         };
@@ -214,7 +214,7 @@ const char* vuetifyAPI(const char* input, int type, char head, char tail, char r
         if (isalpha(c)) {
             if (i != las) words.push_back(&c);
             las = i + 1;
-            c = tolower(c);
+            c = (char)tolower(c);
         }
         else {
             c = 0;
@@ -231,12 +231,12 @@ const char* vuetifyAPI(const char* input, int type, char head, char tail, char r
     int ret_val;
     try {
         if(type==0){
-            ret_val=gen_chains_all(const_cast<char **>(words.data()), words.size(), temp.data());
+            ret_val=gen_chains_all(const_cast<char **>(words.data()), (int)words.size(), temp.data());
         } else if (weighted) {
-            ret_val=gen_chain_word(const_cast<char **>(words.data()), words.size(), temp.data(),
+            ret_val=gen_chain_word(const_cast<char **>(words.data()), (int)words.size(), temp.data(),
                                    head,tail,reject,type==3);
         }else {
-            ret_val=gen_chain_char(const_cast<char **>(words.data()), words.size(), temp.data(),
+            ret_val=gen_chain_char(const_cast<char **>(words.data()), (int)words.size(), temp.data(),
                                    head,tail,reject,type==3);
         }
     }
@@ -257,7 +257,7 @@ const char* vuetifyAPI(const char* input, int type, char head, char tail, char r
         }
     }
 
-    if (ss.str().size() == 0) {
+    if (ss.str().empty()) {
         return (new string("WordList-GUI: no solution exists"))->data();
     }
 
